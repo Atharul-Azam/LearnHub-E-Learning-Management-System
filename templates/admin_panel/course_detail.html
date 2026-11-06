@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
+{% block content %}
+<div class="space-y-4">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:admin_list' %}">&larr; Back to courses</a>
+  <div class="card grid gap-5 md:grid-cols-3">
+    <div class="overflow-hidden rounded-lg md:col-span-1">{% include "partials/thumb.html" %}</div>
+    <div class="space-y-3 md:col-span-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <h1 class="text-2xl font-bold">{{ course.title }}</h1>
+        <span class="badge {% if course.is_published %}badge-green{% else %}badge-amber{% endif %}">{{ course.get_visibility_display }}</span>
+      </div>
+      <p class="text-sm text-slate-500">{{ course.category }} · Teacher: {{ course.teacher.name }} ({{ course.teacher.email }}) · {{ enrollment_total }} enrollment{{ enrollment_total|pluralize }}</p>
+      <p class="whitespace-pre-line text-slate-700">{{ course.description }}</p>
+      <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-4">
+        {% if course.is_published %}
+          <a class="btn btn-secondary" href="{% url 'courses:admin_hide' course.pk %}">Hide</a>
+        {% else %}
+          <a class="btn btn-primary" href="{% url 'courses:admin_publish' course.pk %}">Publish</a>
+        {% endif %}
+        <a class="btn btn-danger" href="{% url 'courses:admin_remove' course.pk %}">Remove</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="card space-y-3">
+    <h2 class="text-lg font-semibold">Learning materials</h2>
+    {% for material in materials %}
+      <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 last:border-0">
+        <span>{{ material.title }} <span class="text-xs text-slate-400">({{ material.original_name }})</span></span>
+        <a class="btn btn-secondary" href="{% url 'materials:file' material.pk %}?download=1">Download</a>
+      </div>
+    {% empty %}
+      <p class="text-sm text-slate-500">No materials have been uploaded yet.</p>
+    {% endfor %}
+  </section>
+
+  <section class="card space-y-3">
+    <h2 class="text-lg font-semibold">Assignments</h2>
+    {% for assignment in assignments %}
+      <div class="border-b border-slate-100 pb-2 last:border-0">
+        <p class="font-medium">{{ assignment.title }}</p>
+        <p class="text-xs text-slate-500">Deadline {{ assignment.deadline|date:"d M Y, H:i" }} · Max marks {{ assignment.max_marks }}</p>
+      </div>
+    {% empty %}
+      <p class="text-sm text-slate-500">No assignments have been published yet.</p>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

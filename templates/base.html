@@ -1,0 +1,71 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LearnHub{% endblock %} · LearnHub</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="flex min-h-full flex-col text-slate-800">
+  <header class="border-b border-slate-200 bg-white">
+    <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3" aria-label="Main navigation">
+      <a href="{% url 'home' %}" class="flex items-center gap-2 text-xl font-bold text-indigo-700">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white" aria-hidden="true">L</span>
+        LearnHub
+      </a>
+      {% if user.is_authenticated %}
+      <button type="button" class="rounded-lg border border-slate-300 p-2 md:hidden" data-nav-toggle aria-expanded="false" aria-controls="main-menu" aria-label="Toggle menu">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div id="main-menu" class="hidden w-full flex-col gap-1 pt-3 md:flex md:w-auto md:flex-row md:items-center md:gap-2 md:pt-0" data-nav-menu>
+        <a class="nav-link" href="{% url 'dashboards:home' %}">Dashboard</a>
+        {% if user.role == 'admin' %}
+          <a class="nav-link" href="{% url 'accounts:teacher_requests' %}">Teacher Requests</a>
+          <a class="nav-link" href="{% url 'accounts:user_list' %}">Users</a>
+          <a class="nav-link" href="{% url 'courses:admin_list' %}">Courses</a>
+        {% elif user.role == 'teacher' %}
+          <a class="nav-link" href="{% url 'courses:teacher_list' %}">My Courses</a>
+          <a class="nav-link" href="{% url 'courses:teacher_create' %}">Create Course</a>
+        {% elif user.role == 'student' %}
+          <a class="nav-link" href="{% url 'courses:browse' %}">Browse Courses</a>
+          <a class="nav-link" href="{% url 'courses:my_courses' %}">My Courses</a>
+        {% endif %}
+        <span class="px-2 text-sm text-slate-500 md:ml-2" title="{{ user.email }}">{{ user.name }} · {{ user.get_role_display }}</span>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary w-full md:w-auto">Log out</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="flex items-center gap-2">
+        <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
+        <a class="btn btn-primary" href="{% url 'accounts:register' %}">Register</a>
+      </div>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+    {% if messages %}
+    <div class="mb-4 space-y-2" role="status" aria-live="polite">
+      {% for message in messages %}
+      <div class="flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm
+        {% if message.tags == 'success' %}border-green-200 bg-green-50 text-green-800
+        {% elif message.tags == 'error' %}border-red-200 bg-red-50 text-red-800
+        {% elif message.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-800
+        {% else %}border-blue-200 bg-blue-50 text-blue-800{% endif %}" data-message>
+        <span>{{ message }}</span>
+        <button type="button" class="text-lg leading-none opacity-60 hover:opacity-100" data-dismiss aria-label="Dismiss message">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+    LearnHub E-Learning Management System
+  </footer>
+  <script src="{% static 'js/app.js' %}" defer></script>
+</body>
+</html>

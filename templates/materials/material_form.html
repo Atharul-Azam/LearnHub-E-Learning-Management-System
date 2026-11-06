@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{% if editing %}Edit material{% else %}Add material{% endif %}{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-3">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_detail' course.pk %}">&larr; Back to {{ course.title }}</a>
+  <div class="card space-y-5">
+    <h1 class="text-2xl font-bold">{% if editing %}Edit material{% else %}Add material{% endif %}</h1>
+    {% if editing %}<p class="text-sm text-slate-500">Current file: {{ material.original_name }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="space-y-4" novalidate data-loading="Uploading…">
+      {% csrf_token %}
+      {% include "partials/field.html" with field=form.title %}
+      {% include "partials/field.html" with field=form.file %}
+      <p class="text-xs text-slate-500">Accepted: PDF, Word, PowerPoint, Excel, TXT, ZIP and MP4 files.</p>
+      <div class="flex flex-wrap gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">{% if editing %}Save{% else %}Upload{% endif %}</button>
+        <a class="btn btn-secondary" href="{% url 'courses:teacher_detail' course.pk %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

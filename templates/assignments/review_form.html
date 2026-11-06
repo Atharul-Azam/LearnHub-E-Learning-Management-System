@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Review submission{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-3">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'assignments:teacher_detail' assignment.pk %}">&larr; Back to submissions</a>
+  <div class="card space-y-5">
+    <div>
+      <h1 class="text-2xl font-bold">Review submission</h1>
+      <p class="text-sm text-slate-500">{{ assignment.title }} · {{ course.title }}</p>
+    </div>
+    <dl class="grid gap-3 text-sm sm:grid-cols-2">
+      <div><dt class="text-slate-500">Student</dt><dd class="font-medium">{{ submission.student.name }} ({{ submission.student.email }})</dd></div>
+      <div><dt class="text-slate-500">Submitted</dt><dd class="font-medium">{{ submission.submitted_at|date:"d M Y, H:i" }} {% if submission.is_late %}<span class="badge badge-red">Late</span>{% else %}<span class="badge badge-green">On time</span>{% endif %}</dd></div>
+      <div><dt class="text-slate-500">Status</dt><dd class="font-medium">{{ submission.status_label }}</dd></div>
+      <div><dt class="text-slate-500">Maximum marks</dt><dd class="font-medium">{{ assignment.max_marks }}</dd></div>
+    </dl>
+    <p class="flex flex-wrap gap-2">
+      <a class="btn btn-secondary" href="{% url 'assignments:submission_file' submission.pk %}">View file</a>
+      <a class="btn btn-secondary" href="{% url 'assignments:submission_file' submission.pk %}?download=1">Download ({{ submission.original_name }})</a>
+    </p>
+    <form method="post" class="space-y-4 border-t border-slate-200 pt-4" novalidate>
+      {% csrf_token %}
+      {% include "partials/field.html" with field=form.marks %}
+      {% include "partials/field.html" with field=form.feedback %}
+      <div class="flex flex-wrap gap-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" href="{% url 'assignments:teacher_detail' assignment.pk %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

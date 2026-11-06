@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Default course thumbnail">
+  <rect width="640" height="360" fill="#eef2ff"/>
+  <rect x="0" y="260" width="640" height="100" fill="#e0e7ff"/>
+  <g fill="none" stroke="#4f46e5" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M200 130 L320 90 L440 130 L320 170 Z"/>
+    <path d="M250 152 V210 C250 225 285 240 320 240 C355 240 390 225 390 210 V152"/>
+    <path d="M440 130 V200"/>
+  </g>
+  <circle cx="440" cy="208" r="8" fill="#4f46e5"/>
+</svg>

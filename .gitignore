@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+# Secrets and runtime data (never commit)
+.env
+db.sqlite3
+db.sqlite3-journal
+media/
+backups/
+logs/
+staticfiles/
+# Node (Tailwind build tooling only)
+node_modules/
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+# NOTE: static/css/app.css (compiled Tailwind) IS committed so the app runs without Node.

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ assignment.title }}{% endblock %}
+{% block content %}
+<div class="space-y-5">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_detail' course.pk %}">&larr; Back to {{ course.title }}</a>
+  <div class="card space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h1 class="text-2xl font-bold">{{ assignment.title }}</h1>
+      <div class="flex gap-2">
+        <a class="btn btn-secondary" href="{% url 'assignments:teacher_edit' assignment.pk %}">Edit</a>
+        <a class="btn btn-danger" href="{% url 'assignments:teacher_delete' assignment.pk %}">Remove</a>
+      </div>
+    </div>
+    <p class="text-sm text-slate-500">Deadline {{ assignment.deadline|date:"d M Y, H:i" }} · Maximum marks {{ assignment.max_marks }} · {{ submission_total }} of {{ enrolled_total }} enrolled student{{ enrolled_total|pluralize }} submitted</p>
+    <p class="whitespace-pre-line text-slate-700">{{ assignment.instructions }}</p>
+    {% if assignment.attachment %}
+    <p><a class="btn btn-secondary" href="{% url 'assignments:attachment' assignment.pk %}?download=1">Download attachment ({{ assignment.attachment_name }})</a></p>
+    {% endif %}
+  </div>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold">Submissions</h2>
+    {% if page.object_list %}
+    <div class="card overflow-x-auto !p-0">
+      <table class="table">
+        <thead><tr><th>Student</th><th>Submitted</th><th>Timing</th><th>Review status</th><th>Marks</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+        {% for submission in page %}
+          <tr>
+            <td class="font-medium">{{ submission.student.name }}<br><span class="text-xs font-normal text-slate-400">{{ submission.student.email }}</span></td>
+            <td>{{ submission.submitted_at|date:"d M Y, H:i" }}</td>
+            <td>{% if submission.is_late %}<span class="badge badge-red">Late</span>{% else %}<span class="badge badge-green">On time</span>{% endif %}</td>
+            <td>{% if submission.reviewed %}<span class="badge badge-green">Reviewed</span>{% else %}<span class="badge badge-amber">Not reviewed</span>{% endif %}</td>
+            <td>{% if submission.reviewed %}{{ submission.marks|floatformat:"-2" }} / {{ assignment.max_marks }}{% else %}—{% endif %}</td>
+            <td class="text-right whitespace-nowrap">
+              <a class="btn btn-secondary" href="{% url 'assignments:submission_file' submission.pk %}">View file</a>
+              <a class="btn btn-secondary" href="{% url 'assignments:submission_file' submission.pk %}?download=1">Download</a>
+              <a class="btn btn-primary" href="{% url 'assignments:review' submission.pk %}">{% if submission.reviewed %}Edit review{% else %}Review{% endif %}</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "partials/pagination.html" %}
+    {% else %}
+    <div class="card text-center text-slate-500">No student has submitted this assignment yet.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

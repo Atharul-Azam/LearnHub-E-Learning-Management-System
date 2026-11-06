@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Courses{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-2xl font-bold">All courses</h1>
+<form method="get" class="card mb-4 grid gap-3 sm:grid-cols-4" role="search">
+  <div class="sm:col-span-2">
+    <label for="q" class="sr-only">Search by title, category or teacher</label>
+    <input id="q" name="q" value="{{ q }}" placeholder="Search by title, category or teacher" class="input">
+  </div>
+  <div>
+    <label for="visibility" class="sr-only">Visibility</label>
+    <select id="visibility" name="visibility" class="input">
+      <option value="">All visibilities</option>
+      {% for value, label in visibilities %}<option value="{{ value }}" {% if visibility == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="flex gap-2">
+    <button class="btn btn-primary" type="submit">Apply</button>
+    <a class="btn btn-secondary" href="{% url 'courses:admin_list' %}">Reset</a>
+  </div>
+</form>
+{% if page.object_list %}
+<div class="card overflow-x-auto !p-0">
+  <table class="table">
+    <thead><tr><th>Title</th><th>Category</th><th>Teacher</th><th>Enrollments</th><th>Visibility</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+    {% for course in page %}
+      <tr>
+        <td class="font-medium">{{ course.title }}</td>
+        <td>{{ course.category }}</td>
+        <td>{{ course.teacher.name }}</td>
+        <td>{{ course.enrollment_total }}</td>
+        <td><span class="badge {% if course.is_published %}badge-green{% else %}badge-amber{% endif %}">{{ course.get_visibility_display }}</span></td>
+        <td class="text-right"><a class="btn btn-secondary" href="{% url 'courses:admin_detail' course.pk %}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card text-center text-slate-500">No courses found.</div>
+{% endif %}
+{% endblock %}

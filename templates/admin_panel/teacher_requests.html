@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Teacher requests{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-2xl font-bold">Pending teacher requests</h1>
+{% if page.object_list %}
+<div class="card overflow-x-auto !p-0">
+  <table class="table">
+    <thead><tr><th>Name</th><th>E-mail</th><th>Registered</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+    {% for teacher in page %}
+      <tr>
+        <td class="font-medium">{{ teacher.name }}</td>
+        <td>{{ teacher.email }}</td>
+        <td>{{ teacher.date_joined|date:"d M Y, H:i" }}</td>
+        <td class="text-right"><a class="btn btn-secondary" href="{% url 'accounts:teacher_request_detail' teacher.pk %}">View details</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card text-center text-slate-500">There are no pending teacher requests.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
+{% block content %}
+<div class="space-y-5">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_list' %}">&larr; Back to my courses</a>
+  <div class="card grid gap-5 md:grid-cols-3">
+    <div class="overflow-hidden rounded-lg md:col-span-1">{% include "partials/thumb.html" %}</div>
+    <div class="space-y-3 md:col-span-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <h1 class="text-2xl font-bold">{{ course.title }}</h1>
+        <span class="badge {% if course.is_published %}badge-green{% else %}badge-amber{% endif %}">{{ course.get_visibility_display }}</span>
+      </div>
+      <p class="text-sm text-slate-500">{{ course.category }}</p>
+      {% if not course.is_published %}<p class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">This course is hidden by an administrator and is not visible to students.</p>{% endif %}
+      <p class="whitespace-pre-line text-slate-700">{{ course.description }}</p>
+      <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-4">
+        <a class="btn btn-secondary" href="{% url 'courses:teacher_edit' course.pk %}">Edit</a>
+        <a class="btn btn-secondary" href="{% url 'courses:teacher_students' course.pk %}">Enrolled Students ({{ enrollment_total }})</a>
+        <a class="btn btn-danger" href="{% url 'courses:teacher_delete' course.pk %}">Delete</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="card space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-lg font-semibold">Learning materials</h2>
+      <a class="btn btn-primary" href="{% url 'materials:add' course.pk %}">Add Material</a>
+    </div>
+    {% for material in materials %}
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
+      <div><p class="font-medium">{{ material.title }}</p><p class="text-xs text-slate-400">{{ material.original_name }} · uploaded {{ material.created_at|date:"d M Y" }}</p></div>
+      <div class="flex gap-2">
+        <a class="btn btn-secondary" href="{% url 'materials:file' material.pk %}">View</a>
+        <a class="btn btn-secondary" href="{% url 'materials:file' material.pk %}?download=1">Download</a>
+        <a class="btn btn-secondary" href="{% url 'materials:edit' material.pk %}">Replace / Edit</a>
+        <a class="btn btn-danger" href="{% url 'materials:delete' material.pk %}">Remove</a>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-sm text-slate-500">No materials yet.</p>
+    {% endfor %}
+  </section>
+
+  <section class="card space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-lg font-semibold">Assignments</h2>
+      <a class="btn btn-primary" href="{% url 'assignments:teacher_add' course.pk %}">Add Assignment</a>
+    </div>
+    {% for assignment in assignments %}
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
+      <div>
+        <p class="font-medium">{{ assignment.title }}</p>
+        <p class="text-xs text-slate-500">Deadline {{ assignment.deadline|date:"d M Y, H:i" }} · Max marks {{ assignment.max_marks }} · {{ assignment.submission_total }} submission{{ assignment.submission_total|pluralize }}</p>
+      </div>
+      <div class="flex gap-2">
+        <a class="btn btn-secondary" href="{% url 'assignments:teacher_detail' assignment.pk %}">Submissions</a>
+        <a class="btn btn-secondary" href="{% url 'assignments:teacher_edit' assignment.pk %}">Edit</a>
+        <a class="btn btn-danger" href="{% url 'assignments:teacher_delete' assignment.pk %}">Remove</a>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-sm text-slate-500">No assignments yet.</p>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

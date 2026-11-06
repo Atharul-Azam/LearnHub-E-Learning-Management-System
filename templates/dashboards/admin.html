@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Administrator dashboard{% endblock %}
+{% block content %}
+<h1 class="mb-1 text-2xl font-bold">Administrator dashboard</h1>
+<p class="mb-6 text-slate-500">Platform statistics, calculated from the current stored data.</p>
+
+<section aria-label="Platform statistics" class="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+  <div class="card"><p class="text-sm text-slate-500">Registered students</p><p class="mt-1 text-3xl font-bold" data-stat="students">{{ stats.students }}</p></div>
+  <div class="card"><p class="text-sm text-slate-500">Approved teachers</p><p class="mt-1 text-3xl font-bold" data-stat="teachers">{{ stats.teachers }}</p></div>
+  <div class="card"><p class="text-sm text-slate-500">Courses</p><p class="mt-1 text-3xl font-bold" data-stat="courses">{{ stats.courses }}</p></div>
+  <div class="card"><p class="text-sm text-slate-500">Enrollments</p><p class="mt-1 text-3xl font-bold" data-stat="enrollments">{{ stats.enrollments }}</p></div>
+  <div class="card"><p class="text-sm text-slate-500">Pending teacher requests</p><p class="mt-1 text-3xl font-bold text-amber-600" data-stat="pending_teachers">{{ stats.pending_teachers }}</p></div>
+</section>
+
+<section aria-label="Management options" class="grid gap-4 md:grid-cols-3">
+  <a class="card transition hover:border-indigo-400" href="{% url 'accounts:teacher_requests' %}">
+    <h2 class="font-semibold">Teacher Requests</h2>
+    <p class="text-sm text-slate-500">Approve or reject teacher registrations.</p>
+  </a>
+  <a class="card transition hover:border-indigo-400" href="{% url 'accounts:user_list' %}">
+    <h2 class="font-semibold">Users</h2>
+    <p class="text-sm text-slate-500">View, activate, deactivate or remove student and teacher accounts.</p>
+  </a>
+  <a class="card transition hover:border-indigo-400" href="{% url 'courses:admin_list' %}">
+    <h2 class="font-semibold">Courses</h2>
+    <p class="text-sm text-slate-500">Hide, publish or remove courses.</p>
+  </a>
+</section>
+{% endblock %}

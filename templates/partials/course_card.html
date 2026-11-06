@@ -1,0 +1,11 @@
+<article class="card flex flex-col overflow-hidden !p-0">
+  {% include "partials/thumb.html" %}
+  <div class="flex flex-1 flex-col gap-2 p-4">
+    <span class="badge badge-indigo self-start">{{ course.category }}</span>
+    <h3 class="text-lg font-semibold leading-snug">{{ course.title }}</h3>
+    <p class="text-sm text-slate-500">By {{ course.teacher.name }}</p>
+    <div class="mt-auto pt-2">
+      <a class="btn btn-primary w-full" href="{% url 'courses:detail' course.pk %}">{% if enrolled %}Open Course{% else %}View details{% endif %}</a>
+    </div>
+  </div>
+</article>

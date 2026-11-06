@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Teacher request{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-4">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'accounts:teacher_requests' %}">&larr; Back to teacher requests</a>
+  <div class="card space-y-4">
+    <h1 class="text-2xl font-bold">{{ teacher.name }}</h1>
+    <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+      <div><dt class="text-slate-500">E-mail</dt><dd class="font-medium">{{ teacher.email }}</dd></div>
+      <div><dt class="text-slate-500">Registered</dt><dd class="font-medium">{{ teacher.date_joined|date:"d M Y, H:i" }}</dd></div>
+      <div><dt class="text-slate-500">Status</dt><dd><span class="badge {% if teacher.status == 'active' %}badge-green{% elif teacher.status == 'pending' %}badge-amber{% else %}badge-red{% endif %}">{{ teacher.get_status_display }}</span></dd></div>
+      {% if teacher.decided_at %}
+      <div><dt class="text-slate-500">Decision recorded</dt><dd class="font-medium">{{ teacher.decided_at|date:"d M Y, H:i" }}{% if teacher.decided_by %} by {{ teacher.decided_by.name }}{% endif %}</dd></div>
+      {% endif %}
+    </dl>
+    {% if teacher.status == 'pending' %}
+    <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-4">
+      <a class="btn btn-primary" href="{% url 'accounts:approve_teacher' teacher.pk %}">Approve</a>
+      <a class="btn btn-danger" href="{% url 'accounts:reject_teacher' teacher.pk %}">Reject</a>
+    </div>
+    {% else %}
+    <p class="border-t border-slate-200 pt-4 text-sm text-slate-500">This request has already been processed and is no longer pending.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

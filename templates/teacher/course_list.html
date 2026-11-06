@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My courses{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-bold">My courses</h1>
+  <a class="btn btn-primary" href="{% url 'courses:teacher_create' %}">Create Course</a>
+</div>
+{% if page.object_list %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for course in page %}
+  <article class="card flex flex-col overflow-hidden !p-0">
+    {% include "partials/thumb.html" %}
+    <div class="flex flex-1 flex-col gap-2 p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="badge badge-indigo">{{ course.category }}</span>
+        <span class="badge {% if course.is_published %}badge-green{% else %}badge-amber{% endif %}">{{ course.get_visibility_display }}</span>
+      </div>
+      <h2 class="text-lg font-semibold">{{ course.title }}</h2>
+      <p class="text-sm text-slate-500">{{ course.enrollment_total }} student{{ course.enrollment_total|pluralize }} · {{ course.material_total }} material{{ course.material_total|pluralize }} · {{ course.assignment_total }} assignment{{ course.assignment_total|pluralize }}</p>
+      <div class="mt-auto flex flex-wrap gap-2 pt-2">
+        <a class="btn btn-primary" href="{% url 'courses:teacher_detail' course.pk %}">Open</a>
+        <a class="btn btn-secondary" href="{% url 'courses:teacher_edit' course.pk %}">Edit</a>
+        <a class="btn btn-secondary" href="{% url 'courses:teacher_students' course.pk %}">Enrolled Students</a>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card text-center text-slate-500">You have not created any courses yet.</div>
+{% endif %}
+{% endblock %}

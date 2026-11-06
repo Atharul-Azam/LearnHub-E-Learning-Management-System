@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Progress — {{ course.title }}{% endblock %}
+{% block content %}
+<div class="space-y-5">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:open_course' course.pk %}">&larr; Back to {{ course.title }}</a>
+  <div class="card space-y-3">
+    <h1 class="text-2xl font-bold">My progress — {{ course.title }}</h1>
+    <div>
+      <div class="mb-1 flex justify-between text-sm"><span class="text-slate-500">Course progress</span><span class="font-semibold">{{ summary.percent }}%</span></div>
+      <div class="h-3 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow="{{ summary.percent }}" aria-valuemin="0" aria-valuemax="100"><div class="h-full bg-indigo-600" style="width: {{ summary.percent }}%"></div></div>
+    </div>
+    <p class="text-sm text-slate-500">
+      {{ summary.materials_done }} of {{ summary.materials_total }} materials opened ·
+      {{ summary.assignments_done }} of {{ summary.assignments_total }} assignments submitted
+    </p>
+  </div>
+
+  <section class="card space-y-3">
+    <h2 class="text-lg font-semibold">Assignments, marks and feedback</h2>
+    {% for row in rows %}
+    <div class="border-b border-slate-100 pb-3 last:border-0">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="font-medium">{{ row.assignment.title }}</p>
+        <span class="text-sm font-semibold">
+          {% if not row.submission %}<span class="badge badge-slate">Not Submitted</span>
+          {% elif row.submission.reviewed %}{{ row.submission.marks|floatformat:"-2" }} / {{ row.assignment.max_marks }}
+          {% else %}<span class="badge badge-amber">Not Yet Reviewed</span>{% endif %}
+        </span>
+      </div>
+      {% if row.submission %}
+      <p class="text-xs text-slate-500">{{ row.submission.status_label }} · submitted {{ row.submission.submitted_at|date:"d M Y, H:i" }}</p>
+      {% if row.submission.reviewed %}<p class="mt-1 whitespace-pre-line text-sm text-slate-700"><span class="text-slate-500">Feedback:</span> {{ row.submission.feedback|default:"No written feedback." }}</p>{% endif %}
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-sm text-slate-500">This course has no assignments yet.</p>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Teacher dashboard{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold">Welcome, {{ user.name }}</h1>
+    <p class="text-slate-500">Manage your courses, materials and assignments.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'courses:teacher_create' %}">Create Course</a>
+</div>
+
+<div class="mb-6 grid grid-cols-2 gap-4">
+  <div class="card"><p class="text-sm text-slate-500">My courses</p><p class="mt-1 text-3xl font-bold">{{ course_total }}</p></div>
+  <div class="card"><p class="text-sm text-slate-500">Submissions awaiting review</p><p class="mt-1 text-3xl font-bold text-amber-600">{{ pending_reviews }}</p></div>
+</div>
+
+<div class="mb-3 flex items-center justify-between">
+  <h2 class="text-lg font-semibold">My courses</h2>
+  {% if course_total > 6 %}<a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_list' %}">View all</a>{% endif %}
+</div>
+{% if courses %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for course in courses %}
+  <article class="card flex flex-col overflow-hidden !p-0">
+    {% include "partials/thumb.html" %}
+    <div class="flex flex-1 flex-col gap-2 p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="badge badge-indigo">{{ course.category }}</span>
+        <span class="badge {% if course.is_published %}badge-green{% else %}badge-amber{% endif %}">{{ course.get_visibility_display }}</span>
+      </div>
+      <h3 class="text-lg font-semibold">{{ course.title }}</h3>
+      <p class="text-sm text-slate-500">{{ course.enrollment_total }} student{{ course.enrollment_total|pluralize }} enrolled</p>
+      <a class="btn btn-primary mt-auto" href="{% url 'courses:teacher_detail' course.pk %}">Manage course</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card text-center text-slate-500">You have not created any courses yet. <a class="text-indigo-700 hover:underline" href="{% url 'courses:teacher_create' %}">Create your first course</a>.</div>
+{% endif %}
+{% endblock %}

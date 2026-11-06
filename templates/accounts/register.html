@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md">
+  <div class="card space-y-5">
+    <div>
+      <h1 class="text-2xl font-bold">Create an account</h1>
+      <p class="text-sm text-slate-500">Student accounts are active immediately. Teacher accounts must be approved by an administrator.</p>
+    </div>
+    <form method="post" class="space-y-4" novalidate>
+      {% csrf_token %}
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-medium text-slate-700">Account category <span class="text-red-600" aria-hidden="true">*</span></legend>
+        <div class="flex gap-3">
+          {% for radio in form.account_type %}
+          <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
+            {{ radio.tag }} {{ radio.choice_label }}
+          </label>
+          {% endfor %}
+        </div>
+        {% for error in form.account_type.errors %}<p class="text-sm text-red-600" role="alert">{{ error }}</p>{% endfor %}
+      </fieldset>
+      {% include "partials/field.html" with field=form.name %}
+      {% include "partials/field.html" with field=form.email %}
+      {% include "partials/field.html" with field=form.password %}
+      <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" data-toggle-password="{{ form.password.id_for_label }}"> Show password</label>
+      <button type="submit" class="btn btn-primary w-full">Register</button>
+    </form>
+    <p class="text-center text-sm text-slate-500">Already registered? <a class="font-medium text-indigo-700 hover:underline" href="{% url 'accounts:login' %}">Log in</a></p>
+  </div>
+</div>
+{% endblock %}

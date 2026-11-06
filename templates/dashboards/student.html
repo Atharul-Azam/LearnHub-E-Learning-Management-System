@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Student dashboard{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold">Welcome, {{ user.name }}</h1>
+    <p class="text-slate-500">Continue learning or find a new course.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'courses:browse' %}">Browse Courses</a>
+</div>
+
+<div class="mb-3 flex items-center justify-between">
+  <h2 class="text-lg font-semibold">My enrolled courses</h2>
+  {% if enrollment_total > 6 %}<a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:my_courses' %}">View all</a>{% endif %}
+</div>
+{% if enrollments %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for enrollment in enrollments %}
+  {% with course=enrollment.course %}
+  <article class="card flex flex-col overflow-hidden !p-0">
+    {% include "partials/thumb.html" %}
+    <div class="flex flex-1 flex-col gap-2 p-4">
+      <h3 class="text-lg font-semibold">{{ course.title }}</h3>
+      <p class="text-sm text-slate-500">By {{ course.teacher.name }}</p>
+      <div>
+        <div class="mb-1 flex justify-between text-xs text-slate-500"><span>Progress</span><span>{{ enrollment.progress }}%</span></div>
+        <div class="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow="{{ enrollment.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="h-full bg-indigo-600" style="width: {{ enrollment.progress }}%"></div></div>
+      </div>
+      <a class="btn btn-primary mt-auto" href="{% url 'courses:open_course' course.pk %}">Open Course</a>
+    </div>
+  </article>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="card text-center text-slate-500">You are not enrolled in any course yet. <a class="text-indigo-700 hover:underline" href="{% url 'courses:browse' %}">Browse the available courses</a>.</div>
+{% endif %}
+{% endblock %}

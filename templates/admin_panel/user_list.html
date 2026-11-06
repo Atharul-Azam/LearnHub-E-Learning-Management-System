@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-2xl font-bold">User accounts</h1>
+<form method="get" class="card mb-4 grid gap-3 sm:grid-cols-4" role="search">
+  <div class="sm:col-span-2">
+    <label for="q" class="sr-only">Search by name or e-mail</label>
+    <input id="q" name="q" value="{{ q }}" placeholder="Search by name or e-mail" class="input">
+  </div>
+  <div>
+    <label for="role" class="sr-only">Role</label>
+    <select id="role" name="role" class="input">
+      <option value="">All roles</option>
+      {% for value, label in roles %}<option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="status" class="sr-only">Status</label>
+    <select id="status" name="status" class="input">
+      <option value="">All statuses</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="flex gap-2 sm:col-span-4">
+    <button class="btn btn-primary" type="submit">Apply</button>
+    <a class="btn btn-secondary" href="{% url 'accounts:user_list' %}">Reset</a>
+  </div>
+</form>
+{% if page.object_list %}
+<div class="card overflow-x-auto !p-0">
+  <table class="table">
+    <thead><tr><th>Name</th><th>E-mail</th><th>Role</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+    {% for account in page %}
+      <tr>
+        <td class="font-medium">{{ account.name }}</td>
+        <td>{{ account.email }}</td>
+        <td>{{ account.get_role_display }}</td>
+        <td><span class="badge {% if account.status == 'active' %}badge-green{% elif account.status == 'pending' %}badge-amber{% else %}badge-red{% endif %}">{{ account.get_status_display }}</span></td>
+        <td class="text-right"><a class="btn btn-secondary" href="{% url 'accounts:user_detail' account.pk %}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card text-center text-slate-500">No accounts match your filters.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-lg">
+  <div class="card space-y-4">
+    <h1 class="text-xl font-bold">{{ title }}</h1>
+    <p class="text-slate-600">{{ message }}</p>
+    <form method="post" class="flex flex-wrap gap-3">
+      {% csrf_token %}
+      <button type="submit" class="btn {% if danger %}btn-danger{% else %}btn-primary{% endif %}">{{ confirm_label }}</button>
+      <a href="{{ cancel_url }}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

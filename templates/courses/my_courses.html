@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}My courses{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-bold">My courses</h1>
+  <a class="btn btn-secondary" href="{% url 'courses:browse' %}">Browse Courses</a>
+</div>
+{% if page.object_list %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for enrollment in page %}
+  {% with course=enrollment.course %}
+  <article class="card flex flex-col overflow-hidden !p-0">
+    {% include "partials/thumb.html" %}
+    <div class="flex flex-1 flex-col gap-2 p-4">
+      <h2 class="text-lg font-semibold">{{ course.title }}</h2>
+      <p class="text-sm text-slate-500">By {{ course.teacher.name }}</p>
+      <div>
+        <div class="mb-1 flex justify-between text-xs text-slate-500"><span>Progress</span><span>{{ enrollment.progress }}%</span></div>
+        <div class="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow="{{ enrollment.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="h-full bg-indigo-600" style="width: {{ enrollment.progress }}%"></div></div>
+      </div>
+      <div class="mt-auto flex gap-2 pt-2">
+        <a class="btn btn-primary" href="{% url 'courses:open_course' course.pk %}">Open Course</a>
+        <a class="btn btn-secondary" href="{% url 'progress:course_progress' course.pk %}">Progress</a>
+      </div>
+    </div>
+  </article>
+  {% endwith %}
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card text-center text-slate-500">You are not enrolled in any course yet. <a class="text-indigo-700 hover:underline" href="{% url 'courses:browse' %}">Browse the available courses</a>.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{
+  "name": "learnhub-assets",
+  "private": true,
+  "description": "Tailwind CSS build for the LearnHub Django templates (no runtime dependency).",
+  "scripts": {
+    "build:css": "node tools/build_css.mjs",
+    "watch:css": "node tools/build_css.mjs --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.0"
+  }
+}

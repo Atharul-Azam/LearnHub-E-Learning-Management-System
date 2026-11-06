@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Enrolled students{% endblock %}
+{% block content %}
+<a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_detail' course.pk %}">&larr; Back to {{ course.title }}</a>
+<h1 class="mb-4 mt-2 text-2xl font-bold">Enrolled students — {{ course.title }}</h1>
+{% if page.object_list %}
+<div class="card overflow-x-auto !p-0">
+  <table class="table">
+    <thead><tr><th>Name</th><th>E-mail</th><th>Enrollment date</th></tr></thead>
+    <tbody>
+    {% for enrollment in page %}
+      <tr>
+        <td class="font-medium">{{ enrollment.student.name }}</td>
+        <td>{{ enrollment.student.email }}</td>
+        <td>{{ enrollment.enrolled_at|date:"d M Y, H:i" }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card text-center text-slate-500">No students have enrolled in this course yet.</div>
+{% endif %}
+{% endblock %}
