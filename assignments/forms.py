@@ -1,12 +1,9 @@
 from decimal import Decimal
-
 from django import forms
 from django.db.models import Max
-
 from core.files import clean_display_name, schedule_file_delete
 from core.services import normalise_text
 from core.validators import validate_attachment, validate_submission
-
 from .models import Assignment
 
 INPUT = "w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
