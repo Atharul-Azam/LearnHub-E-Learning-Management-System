@@ -1,4 +1,4 @@
-# LearnHub – E-Learning Management System
+LearnHub – E-Learning Management System
 
 Django + Django templates + Tailwind CSS + vanilla JavaScript + SQLite + local media storage, as specified in the Detailed Design Document.
 Roles: **Administrator**, **Teacher**, **Student**. All 17 use cases (UC1–UC17) are implemented.
