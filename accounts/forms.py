@@ -2,14 +2,10 @@ from django import forms
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
-
 from core.services import normalise_text
-
 from .models import User
 
 INPUT = "w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-
-
 class RegistrationForm(forms.Form):
     """UC1. Student and Teacher categories; name, e-mail and password are mandatory."""
 
@@ -25,7 +21,6 @@ class RegistrationForm(forms.Form):
         if not name:
             raise forms.ValidationError("Name is required.")
         return name
-
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
         try:
