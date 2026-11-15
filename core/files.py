@@ -30,6 +30,10 @@ def thumbnail_upload_to(instance, filename):
     return _stored_name("thumbnails", filename)
 
 
+def avatar_upload_to(instance, filename):
+    return _stored_name("avatars", filename)
+
+
 def material_upload_to(instance, filename):
     return _stored_name(f"materials/course_{instance.course_id}", filename)
 

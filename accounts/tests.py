@@ -22,12 +22,13 @@ class RegistrationTests(TestCase):  # UC1
         self.assertContains(response, "Student")
         self.assertContains(response, "Teacher")
 
-    def test_student_registration_is_active_and_password_is_hashed(self):
+    def test_student_registration_is_active_unverified_and_password_is_hashed(self):
         response = self.client.post(self.url, self.data)
         self.assertRedirects(response, reverse("accounts:login"))
         user = User.objects.get(email="ann@example.com")
         self.assertEqual(user.role, User.Role.STUDENT)
         self.assertEqual(user.status, User.Status.ACTIVE)
+        self.assertFalse(user.email_verified)
         self.assertNotEqual(user.password, "Passw0rd123")
         self.assertTrue(user.password.startswith(("pbkdf2_", "argon2", "bcrypt", "scrypt")))
         self.assertTrue(user.check_password("Passw0rd123"))
@@ -42,7 +43,7 @@ class RegistrationTests(TestCase):  # UC1
         user = User.objects.get(email="t@example.com")
         self.assertEqual(user.role, User.Role.TEACHER)
         self.assertEqual(user.status, User.Status.PENDING)
-        self.assertContains(response, "waiting for administrator approval")
+        self.assertContains(response, "an administrator has approved your account")
 
     def test_duplicate_email_is_rejected_case_insensitively(self):
         make_student("ann@example.com")

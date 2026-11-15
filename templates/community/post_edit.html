@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Edit message{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-xl"><div class="card space-y-4">
+  <h1 class="text-xl font-bold">Edit your message</h1>
+  <form method="post" class="space-y-3" novalidate>{% csrf_token %}
+    {% include "partials/field.html" with field=form.body %}
+    <div class="flex gap-3"><button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-secondary" href="{% if request.user.is_teacher %}{% url 'community:teacher_course' course.pk %}{% else %}{% url 'community:student_course' course.pk %}{% endif %}">Cancel</a></div>
+  </form>
+</div></div>
+{% endblock %}

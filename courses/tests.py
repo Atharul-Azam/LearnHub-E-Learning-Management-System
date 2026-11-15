@@ -52,7 +52,7 @@ class TeacherCourseTests(MediaTestCase):  # UC7, UC8
     def test_default_image_is_used_when_no_thumbnail(self):
         self.client.post(reverse("courses:teacher_create"), self.data)
         response = self.client.get(reverse("courses:teacher_list"))
-        self.assertContains(response, "default_thumbnail.svg")
+        self.assertContains(response, "cover-")  # generated cover (category theme) instead of an image
 
     def test_required_fields(self):
         for missing in ("title", "description", "category"):

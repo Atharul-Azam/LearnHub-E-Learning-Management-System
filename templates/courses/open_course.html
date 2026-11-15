@@ -12,6 +12,10 @@
       <a class="btn btn-primary" href="{% url 'progress:course_progress' course.pk %}">Progress ({{ enrollment.progress }}%)</a>
     </div>
     <p class="whitespace-pre-line text-slate-700">{{ course.description }}</p>
+    <div class="flex flex-wrap items-center gap-3">
+      <a class="btn btn-secondary" href="{% url 'community:student_course' course.pk %}">Announcements &amp; Q&amp;A</a>
+      {% include "partials/share_button.html" %}
+    </div>
   </div>
 
   <section class="card space-y-3">

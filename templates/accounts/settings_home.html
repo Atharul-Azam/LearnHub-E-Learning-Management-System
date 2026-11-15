@@ -1,0 +1,15 @@
+{% extends "accounts/settings_base.html" %}
+{% block settings_content %}
+<section class="card space-y-4">
+  <h2 class="text-lg font-semibold">Account information</h2>
+  <div class="flex items-center gap-4">{% include "partials/avatar.html" with person=user size="h-16 w-16" %}<div><p class="text-lg font-semibold">{{ user.name }}</p><p class="text-sm text-slate-500">{{ user.get_role_display }}</p></div></div>
+  <dl class="grid gap-3 text-sm sm:grid-cols-2">
+    {% if user.public_id %}<div><dt class="text-slate-500">{% if user.role == "teacher" %}Teacher ID{% else %}Student ID{% endif %}</dt><dd class="font-mono font-semibold">{{ user.public_id }}</dd></div>{% endif %}
+    <div><dt class="text-slate-500">E-mail</dt><dd class="font-medium">{{ user.email }} {% if user.email_verified %}<span class="badge badge-green">Verified</span>{% endif %}</dd></div>
+    <div><dt class="text-slate-500">Account status</dt><dd class="font-medium">{{ user.get_status_display }}</dd></div>
+    <div><dt class="text-slate-500">Member since</dt><dd class="font-medium">{{ user.date_joined|date:"d M Y" }}</dd></div>
+  </dl>
+  <p class="text-xs text-slate-500">Your ID is assigned once and never changes when you edit your profile.</p>
+</section>
+<section class="card"><h2 class="mb-2 text-lg font-semibold">Log out</h2><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">Log out of LearnHub</button></form></section>
+{% endblock %}

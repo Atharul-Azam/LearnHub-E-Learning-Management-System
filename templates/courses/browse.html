@@ -1,27 +1,40 @@
 {% extends "base.html" %}
 {% block title %}Browse courses{% endblock %}
 {% block content %}
-<h1 class="mb-4 text-2xl font-bold">Browse courses</h1>
-<form method="get" class="card mb-6 grid gap-3 sm:grid-cols-4" role="search">
-  <div class="sm:col-span-2">
-    <label for="q" class="sr-only">Search courses by title or keyword</label>
-    <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search by title or keyword" class="input">
-  </div>
+<div class="mb-5 flex flex-wrap items-end justify-between gap-2">
   <div>
+    <h1 class="text-2xl font-bold tracking-tight">Browse courses</h1>
+    <p class="text-sm text-slate-500">{{ page.paginator.count }} course{{ page.paginator.count|pluralize }}{% if searching %} match your search{% else %} available{% endif %}</p>
+  </div>
+</div>
+<form method="get" class="card mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-12" role="search">
+  <div class="relative sm:col-span-2 lg:col-span-5">
+    <label for="q" class="sr-only">Search courses by title or keyword</label>
+    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg></span>
+    <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search by title or keyword" class="input input-icon">
+  </div>
+  <div class="lg:col-span-3">
     <label for="category" class="sr-only">Category</label>
     <select id="category" name="category" class="input">
       <option value="">All categories</option>
       {% for name in categories %}<option value="{{ name }}" {% if category|lower == name|lower %}selected{% endif %}>{{ name }}</option>{% endfor %}
     </select>
   </div>
-  <div class="flex gap-2">
-    <button type="submit" class="btn btn-primary">Search</button>
+  <div class="lg:col-span-2">
+    <label for="sort" class="sr-only">Sort</label>
+    <select id="sort" name="sort" class="input">
+      <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest first</option>
+      <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Oldest first</option>
+    </select>
+  </div>
+  <div class="flex gap-2 sm:col-span-2 lg:col-span-2">
+    <button type="submit" class="btn btn-primary flex-1">Search</button>
     {% if searching %}<a class="btn btn-secondary" href="{% url 'courses:browse' %}">Clear</a>{% endif %}
   </div>
 </form>
 
 {% if page.object_list %}
-<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
   {% for course in page %}
     {% if course.pk in enrolled_ids %}
       {% include "partials/course_card.html" with enrolled=True %}
@@ -32,7 +45,8 @@
 </div>
 {% include "partials/pagination.html" %}
 {% else %}
-<div class="card py-10 text-center">
+<div class="card py-12 text-center">
+  <span class="stat-icon stat-indigo mb-3 !h-12 !w-12">{% include "partials/icon.html" with name="book" css="h-6 w-6" %}</span>
   <p class="text-lg font-semibold">No Courses Found</p>
   <p class="text-sm text-slate-500">{% if searching %}Try a different keyword or category.{% else %}There are no published courses yet.{% endif %}</p>
 </div>

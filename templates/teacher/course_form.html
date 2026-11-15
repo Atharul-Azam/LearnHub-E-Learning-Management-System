@@ -12,6 +12,12 @@
       {% include "partials/field.html" with field=form.title %}
       {% include "partials/field.html" with field=form.description %}
       {% include "partials/field.html" with field=form.category %}
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-medium text-slate-700">Course type</legend>
+        {% for radio in form.access %}
+        <label class="flex items-start gap-2 text-sm text-slate-700">{{ radio.tag }}<span><strong>{{ radio.choice_label }}</strong>{% if radio.choice_value == "public" %} – listed for all students; anyone can enrol.{% else %} – hidden from listings; students need your invitation link and your approval.{% endif %}</span></label>
+        {% endfor %}
+      </fieldset>
       <datalist id="category-options">{% for name in categories %}<option value="{{ name }}">{% endfor %}</datalist>
       {% if editing and course.thumbnail %}
       <div class="space-y-1">

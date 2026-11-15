@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="card flex flex-wrap items-center gap-5">
+    {% include "partials/avatar.html" with person=profile_user size="h-20 w-20" %}
+    <div class="min-w-0 flex-1">
+      <h1 class="text-2xl font-bold">{{ profile_user.name }}</h1>
+      <p class="text-sm text-slate-500">{{ profile_user.get_role_display }}{% if profile_user.public_id %} · <span class="font-mono font-semibold text-slate-700">{{ profile_user.public_id }}</span>{% endif %}</p>
+      <p class="text-sm text-slate-500">{{ profile_user.email }} · Member since {{ profile_user.date_joined|date:"d M Y" }}</p>
+    </div>
+    <a class="btn btn-secondary" href="{% url 'accounts:settings_profile' %}">Edit profile</a>
+  </section>
+
+  {% if profile_user.role == "teacher" %}
+  <section class="grid gap-4 sm:grid-cols-2">
+    <div class="card"><p class="text-sm text-slate-500">Courses created</p><p class="text-3xl font-bold">{{ courses_created }}</p></div>
+    <div class="card"><p class="text-sm text-slate-500">Total enrolled students</p><p class="text-3xl font-bold">{{ students_total }}</p></div>
+  </section>
+  <section class="card space-y-2"><h2 class="text-lg font-semibold">About</h2>
+    {% if profile_user.bio %}<p class="whitespace-pre-line text-slate-700">{{ profile_user.bio }}</p>{% else %}<p class="text-sm text-slate-500">No biography yet.</p>{% endif %}
+    {% if profile_user.expertise %}<p class="text-sm"><span class="text-slate-500">Expertise:</span> {{ profile_user.expertise }}</p>{% endif %}
+  </section>
+  {% elif profile_user.role == "student" %}
+  <section class="grid gap-4 sm:grid-cols-4">
+    <div class="card"><p class="text-sm text-slate-500">Enrolled courses</p><p class="text-3xl font-bold">{{ enrolled_total }}</p></div>
+    <div class="card"><p class="text-sm text-slate-500">Completed (100%)</p><p class="text-3xl font-bold">{{ completed_total }}</p></div>
+    <div class="card"><p class="text-sm text-slate-500">Overall progress</p><p class="text-3xl font-bold">{{ overall_progress }}%</p></div>
+    <div class="card"><p class="text-sm text-slate-500">Favourites</p><p class="text-3xl font-bold"><a class="hover:underline" href="{% url 'courses:favourites' %}">{{ favourite_total }}</a></p></div>
+  </section>
+  <section class="card space-y-3"><h2 class="text-lg font-semibold">My courses</h2>
+    {% for enrollment in enrolled_courses %}
+    <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 last:border-0"><a class="font-medium text-indigo-700 hover:underline" href="{% url 'courses:open_course' enrollment.course.pk %}">{{ enrollment.course.title }}</a><span class="text-sm text-slate-500">{{ enrollment.progress }}%</span></div>
+    {% empty %}<p class="text-sm text-slate-500">Not enrolled in any course yet.</p>{% endfor %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

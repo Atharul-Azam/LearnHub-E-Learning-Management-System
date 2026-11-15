@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Favourite courses{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-2xl font-bold">Favourite courses</h1>
+{% if page.object_list %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for item in page %}{% with course=item.course %}
+    {% if course.pk in enrolled_ids %}{% include "partials/course_card.html" with enrolled=True %}{% else %}{% include "partials/course_card.html" with enrolled=False %}{% endif %}
+  {% endwith %}{% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card py-10 text-center"><p class="text-lg font-semibold">No favourites yet</p><p class="text-sm text-slate-500">Use the star on a course to save it here.</p><a class="btn btn-primary mt-3" href="{% url 'courses:browse' %}">Browse courses</a></div>
+{% endif %}
+{% endblock %}

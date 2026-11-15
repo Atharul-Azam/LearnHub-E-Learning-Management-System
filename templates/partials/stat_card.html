@@ -1,0 +1,12 @@
+{# Usage: include with label=... value=... [hint=...] [icon="book"] [theme="indigo|emerald|amber|rose|sky|violet"] [tone="text-amber-600"] #}
+<div class="stat stat-{{ theme|default:'indigo' }}">
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <p class="text-sm font-medium text-slate-500">{{ label }}</p>
+      <p class="mt-1 text-3xl font-bold tracking-tight {{ tone }}">{{ value }}</p>
+    </div>
+    {% if icon %}<span class="stat-icon">{% include "partials/icon.html" with name=icon css="h-5 w-5" %}</span>{% endif %}
+  </div>
+  {% if hint %}<p class="mt-1 text-xs text-slate-500">{{ hint }}</p>{% endif %}
+  {% if bar is not None and bar != "" %}<div class="progress mt-3" role="progressbar" aria-label="{{ label }}" aria-valuenow="{{ bar }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-fill" style="width: {{ bar }}%"></div></div>{% endif %}
+</div>

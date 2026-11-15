@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Announcements &amp; Q&amp;A – {{ course.title }}{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <a class="text-sm text-indigo-700 hover:underline" href="{% if is_teacher %}{% url 'courses:teacher_detail' course.pk %}{% else %}{% url 'courses:open_course' course.pk %}{% endif %}">&larr; Back to {{ course.title }}</a>
+  <h1 class="text-2xl font-bold">Announcements &amp; Q&amp;A <span class="text-base font-normal text-slate-500">· {{ course.title }}</span></h1>
+
+  <section class="card space-y-4" aria-labelledby="ann-h">
+    <h2 id="ann-h" class="text-lg font-semibold">Announcements</h2>
+    {% if announcement_form %}
+    <form method="post" action="{% url 'community:announcement_create' course.pk %}" class="space-y-3 rounded-lg bg-slate-50 p-4" novalidate>
+      {% csrf_token %}
+      {% include "partials/field.html" with field=announcement_form.title %}
+      {% include "partials/field.html" with field=announcement_form.body %}
+      <button type="submit" class="btn btn-primary">Publish announcement</button>
+    </form>
+    {% endif %}
+    {% for item in announcements %}
+    <article class="border-b border-slate-100 pb-3 last:border-0">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="font-semibold">{{ item.title }}</h3>
+        {% if is_teacher %}<a class="text-sm text-red-600 hover:underline" href="{% url 'community:announcement_delete' item.pk %}">Delete</a>{% endif %}
+      </div>
+      <p class="text-xs text-slate-400">{{ item.created_at|date:"d M Y, H:i" }}</p>
+      <p class="mt-1 whitespace-pre-line text-slate-700">{{ item.body }}</p>
+    </article>
+    {% empty %}
+    <p class="text-sm text-slate-500">No announcements yet.</p>
+    {% endfor %}
+  </section>
+
+  <section class="card space-y-4" aria-labelledby="qa-h">
+    <h2 id="qa-h" class="text-lg font-semibold">Discussion</h2>
+    <form method="post" action="{% url 'community:post_create' course.pk %}" class="space-y-2" novalidate>
+      {% csrf_token %}
+      <label for="id_body" class="block text-sm font-medium text-slate-700">{% if is_teacher %}Start a discussion{% else %}Ask a question{% endif %}</label>
+      {{ post_form.body }}
+      <button type="submit" class="btn btn-primary">Post</button>
+    </form>
+
+    {% for question in page %}
+    <article class="rounded-lg border border-slate-200 p-4" id="post-{{ question.pk }}">
+      {% include "community/_post.html" with post=question %}
+      <div class="ml-6 mt-3 space-y-3 border-l-2 border-slate-200 pl-4">
+        {% for reply in question.replies.all %}
+          <div id="post-{{ reply.pk }}">{% include "community/_post.html" with post=reply %}</div>
+        {% endfor %}
+        <form method="post" action="{% url 'community:post_create' course.pk %}" class="space-y-2" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="parent" value="{{ question.pk }}">
+          <label for="reply-{{ question.pk }}" class="sr-only">Reply to {{ question.author.name|default:"this question" }}</label>
+          <textarea id="reply-{{ question.pk }}" name="body" rows="2" maxlength="2000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Write a reply…"></textarea>
+          <button type="submit" class="btn btn-secondary">Reply</button>
+        </form>
+      </div>
+    </article>
+    {% empty %}
+    <p class="text-sm text-slate-500">No questions yet. Be the first to ask.</p>
+    {% endfor %}
+    {% include "partials/pagination.html" %}
+  </section>
+</div>
+{% endblock %}

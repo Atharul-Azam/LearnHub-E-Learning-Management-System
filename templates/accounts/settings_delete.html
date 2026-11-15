@@ -1,0 +1,30 @@
+{% extends "accounts/settings_base.html" %}
+{% block settings_content %}
+<section class="card space-y-4 border-red-200">
+  <h2 class="text-lg font-semibold text-red-700">Delete account</h2>
+  <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+    <p class="font-semibold">This permanently deletes your account and cannot be undone.</p>
+    <ul class="mt-1 list-inside list-disc">
+      {% if user.role == "student" %}
+      <li>Your enrollments, progress, favourites and submitted work (files, marks and feedback) are deleted.</li>
+      <li>Your discussion messages stay visible to the class as "Deleted user".</li>
+      {% else %}
+      <li>Your profile, notifications and discussion messages are removed or shown as "Deleted user".</li>
+      <li>You can only delete your account after you have removed all of your courses.</li>
+      {% endif %}
+      <li>All your devices are signed out immediately.</li>
+    </ul>
+  </div>
+  {% if blocker %}
+    <p class="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">{{ blocker }}</p>
+  {% else %}
+  <form method="post" class="space-y-4" novalidate>
+    {% csrf_token %}
+    {% include "partials/field.html" with field=form.password %}
+    <label class="flex items-start gap-2 text-sm">{{ form.understand }} <span>{{ form.understand.label }}</span></label>
+    {% if form.understand.errors %}<p class="text-sm text-red-700">{{ form.understand.errors.0 }}</p>{% endif %}
+    <button type="submit" class="btn btn-danger">Permanently delete my account</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

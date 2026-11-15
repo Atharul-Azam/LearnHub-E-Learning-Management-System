@@ -19,6 +19,7 @@
       {% include "partials/field.html" with field=form.password %}
       <button type="submit" class="btn btn-primary w-full">Log in</button>
     </form>
+    <p class="text-center text-sm text-slate-500"><a class="font-medium text-indigo-700 hover:underline" href="{% url 'accounts:resend_verification' %}">{% if unverified %}Resend the verification e-mail{% else %}Did not get the verification e-mail?{% endif %}</a></p>
     <p class="text-center text-sm text-slate-500">New to LearnHub? <a class="font-medium text-indigo-700 hover:underline" href="{% url 'accounts:register' %}">Create an account</a></p>
   </div>
 </div>

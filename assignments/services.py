@@ -2,10 +2,13 @@
 import logging
 
 from django.db import IntegrityError, transaction
+from django.urls import reverse
 from django.utils import timezone
 
 from core.files import clean_display_name, schedule_file_delete
 from core.services import BusinessRuleError
+from notifications.models import Notification
+from notifications.services import notify
 from progress.services import sync_student_progress
 
 from .models import Submission
@@ -47,7 +50,29 @@ def submit_assignment(student, assignment, upload):
         if submission.file and submission.file.name:
             schedule_file_delete(submission.file.storage, submission.file.name)
         raise
+    notify(
+        assignment.course.teacher,
+        Notification.Category.ASSIGNMENTS,
+        f"{student.name} submitted '{assignment.title}' in {assignment.course.title}.",
+        reverse("assignments:teacher_detail", args=[assignment.pk]),
+        f"submission:{submission.pk}",
+    )
     return submission
+
+
+def notify_new_assignment(assignment):
+    """Tell every enrolled student about a new assignment (once per assignment)."""
+    from courses.models import Enrollment
+
+    url_ = reverse("assignments:student_detail", args=[assignment.pk])
+    for enrollment in Enrollment.objects.filter(course=assignment.course).select_related("student"):
+        notify(
+            enrollment.student,
+            Notification.Category.ASSIGNMENTS,
+            f"New assignment '{assignment.title}' in {assignment.course.title}. Deadline {assignment.deadline:%d %b %Y, %H:%M}.",
+            url_,
+            f"assignment:{assignment.pk}",
+        )
 
 
 @transaction.atomic
@@ -66,4 +91,12 @@ def save_review(submission, marks, feedback):
     submission.reviewed = True
     submission.reviewed_at = timezone.now()
     submission.save(update_fields=["marks", "feedback", "reviewed", "reviewed_at"])
+    notify(
+        submission.student,
+        Notification.Category.ASSIGNMENTS,
+        f"Marks published for '{submission.assignment.title}': {submission.marks}/{submission.assignment.max_marks}"
+        + (" – the teacher left feedback." if feedback else "."),
+        reverse("assignments:student_detail", args=[submission.assignment_id]),
+        f"review:{submission.pk}",  # one notification per submission; later edits do not repeat it
+    )
     return submission

@@ -1,0 +1,8 @@
+{# Copy-to-clipboard share control: one joined input + button. Usage: include with share_url=... (empty = nothing shown) #}
+{% if share_url %}
+<div class="share-group relative" data-share>
+  <input type="text" readonly value="{{ share_url }}" aria-label="Course link" class="input" data-share-input>
+  <button type="button" class="btn btn-secondary" data-copy-button>{% include "partials/icon.html" with name="link" css="h-4 w-4" %}Copy link</button>
+  <span class="absolute right-0 top-full z-10 mt-1 rounded-md bg-slate-800 px-2 py-0.5 text-xs text-white empty:hidden" role="status" aria-live="polite" data-copy-status></span>
+</div>
+{% endif %}

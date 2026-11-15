@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Access requests{% endblock %}
+{% block content %}
+{% if course %}<a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_detail' course.pk %}">&larr; Back to {{ course.title }}</a>{% endif %}
+<h1 class="mb-4 mt-2 text-2xl font-bold">{% if course %}Access requests — {{ course.title }}{% else %}Pending access requests{% endif %}</h1>
+{% if page.object_list %}
+<div class="card overflow-x-auto !p-0">
+  <table class="table">
+    <thead><tr><th>Student</th><th>Student ID</th>{% if not course %}<th>Course</th>{% endif %}<th>Requested</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for item in page %}
+      <tr>
+        <td class="font-medium">{{ item.student.name }}<div class="text-xs font-normal text-slate-400">{{ item.student.email }}</div></td>
+        <td>{{ item.student.public_id|default:"–" }}</td>
+        {% if not course %}<td>{{ item.course.title }}</td>{% endif %}
+        <td>{{ item.requested_at|date:"d M Y, H:i" }}</td>
+        <td><span class="badge {% if item.status == 'approved' %}badge-green{% elif item.status == 'pending' %}badge-amber{% else %}badge-red{% endif %}">{{ item.get_status_display }}</span></td>
+        <td class="text-right">
+          {% if item.status != "approved" %}
+          <form method="post" action="{% url 'courses:request_approve' item.pk %}" class="inline">{% csrf_token %}<button class="btn btn-primary" type="submit">Approve</button></form>
+          {% endif %}
+          {% if item.status == "pending" %}
+          <form method="post" action="{% url 'courses:request_reject' item.pk %}" class="inline">{% csrf_token %}<button class="btn btn-secondary" type="submit">Reject</button></form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card py-10 text-center text-slate-500">No {% if not course %}pending {% endif %}access requests.</div>
+{% endif %}
+{% endblock %}

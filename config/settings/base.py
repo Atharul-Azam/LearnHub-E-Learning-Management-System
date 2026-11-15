@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "assignments",
     "progress",
     "dashboards",
+    "notifications",
+    "community",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +77,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "notifications.context.notifications",
+                "core.context.navigation",
             ],
         },
     },
@@ -108,6 +112,24 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {"NAME": "accounts.validators.LetterAndNumberValidator"},
 ]
+
+# --------------------------------------------------------------------------
+# E-mail (verification links). Console backend unless SMTP is configured.
+# --------------------------------------------------------------------------
+EMAIL_VERIFICATION_TIMEOUT = env_int("EMAIL_VERIFICATION_TIMEOUT_SECONDS", 24 * 3600)
+PASSWORD_RESET_TIMEOUT = EMAIL_VERIFICATION_TIMEOUT  # used by the token generator for expiry
+SITE_URL = env("SITE_URL", "http://127.0.0.1:8000")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "LearnHub <no-reply@learnhub.local>")
+if env("EMAIL_HOST"):
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = env("EMAIL_HOST")
+    EMAIL_PORT = env_int("EMAIL_PORT", 587)
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+    EMAIL_TIMEOUT = 15
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # prints the mail in the terminal
 
 # --------------------------------------------------------------------------
 # Sessions (SRS 21.5: configurable inactivity timeout)
@@ -153,6 +175,10 @@ UPLOAD_RULES = {
     "thumbnail": {
         "extensions": {"jpg", "jpeg", "png", "gif", "webp"},
         "max_bytes": env_int("MAX_THUMBNAIL_MB", 2) * MB,
+    },
+    "avatar": {
+        "extensions": {"jpg", "jpeg", "png", "webp"},
+        "max_bytes": env_int("MAX_AVATAR_MB", 2) * MB,
     },
     "material": {
         "extensions": _DOCUMENT_TYPES | {"mp4"},

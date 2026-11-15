@@ -2,9 +2,11 @@
 from django.shortcuts import redirect, render
 
 from accounts.models import User
-from assignments.models import Submission
 from core.decorators import admin_required, login_required_any, student_required, teacher_required
-from courses.models import Course, Enrollment
+from courses.models import Course, CourseAccessRequest, Enrollment
+from notifications import services as notification_services
+
+from . import stats
 
 
 @login_required_any
@@ -38,26 +40,35 @@ def admin_dashboard(request):
 
 @teacher_required
 def teacher_dashboard(request):
-    from django.db.models import Count
-
-    courses = (
-        Course.objects.filter(teacher=request.user)
-        .annotate(enrollment_total=Count("enrollments", distinct=True))
-        .order_by("-created_at", "-id")
-    )
-    pending_reviews = Submission.objects.filter(assignment__course__teacher=request.user, reviewed=False).count()
+    totals = stats.teacher_totals(request.user)
+    courses = Course.objects.filter(teacher=request.user).order_by("-created_at", "-id")
     return render(
         request,
         "dashboards/teacher.html",
-        {"courses": courses[:6], "course_total": courses.count(), "pending_reviews": pending_reviews},
+        {
+            **totals,
+            "courses": courses[:6],
+            "performance": stats.teacher_course_performance(request.user)[:6],
+            "activity": stats.teacher_recent_activity(request.user),
+            "pending_request_list": CourseAccessRequest.objects.filter(
+                course__teacher=request.user, status=CourseAccessRequest.Status.PENDING
+            ).select_related("course", "student")[:5],
+        },
     )
+
+
+@teacher_required
+def teacher_analytics(request):
+    """Only the signed-in teacher's own courses are counted (every query is filtered by teacher)."""
+    totals = stats.teacher_totals(request.user)
+    performance = stats.teacher_course_performance(request.user)
+    most = max((row["students"] for row in performance), default=0)
+    for row in performance:
+        row["bar"] = round(row["students"] / most * 100) if most else 0
+    return render(request, "dashboards/analytics.html", {**totals, "performance": performance})
 
 
 @student_required
 def student_dashboard(request):
-    enrollments = (
-        Enrollment.objects.filter(student=request.user, course__visibility=Course.Visibility.PUBLISHED)
-        .select_related("course", "course__teacher")
-        .order_by("-enrolled_at", "-id")
-    )
-    return render(request, "dashboards/student.html", {"enrollments": enrollments[:6], "enrollment_total": enrollments.count()})
+    notification_services.generate_deadline_reminders(request.user)
+    return render(request, "dashboards/student.html", stats.student_overview(request.user))

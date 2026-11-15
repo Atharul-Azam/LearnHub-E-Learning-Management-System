@@ -1,0 +1,2 @@
+{# Profile picture or initials. Usage: include with person=user size="h-10 w-10" #}
+{% if person.profile_picture %}<img src="{% url 'accounts:avatar' person.pk %}" alt="" class="inline-block {{ size|default:'h-10 w-10' }} rounded-full object-cover align-middle ring-2 ring-white/60" loading="lazy">{% else %}<span class="avatar-fallback inline-flex {{ size|default:'h-10 w-10' }} items-center justify-center rounded-full text-xs font-semibold align-middle" aria-hidden="true">{{ person.name|slice:":1"|upper }}</span>{% endif %}

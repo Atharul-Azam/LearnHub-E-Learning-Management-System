@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Join {{ course.title }}{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <div class="card space-y-4">
+    <p class="text-sm font-medium text-indigo-700">Private course invitation</p>
+    <h1 class="text-2xl font-bold">{{ course.title }}</h1>
+    <p class="text-sm text-slate-500"><span class="badge badge-indigo">{{ course.category }}</span> Teacher: {{ course.teacher.name }}</p>
+    <p class="whitespace-pre-line text-slate-700">{{ course.description }}</p>
+    <p class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">The course content is only visible after the teacher approves your request.</p>
+    {% if access.status == "pending" %}
+      <p class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800" role="status">Your request is waiting for the teacher's decision.</p>
+    {% elif access.status == "rejected" %}
+      <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="status">Your request was not approved.</p>
+    {% elif access.status == "revoked" %}
+      <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="status">Your access to this course was removed by the teacher.</p>
+    {% else %}
+      <form method="post">{% csrf_token %}<button type="submit" class="btn btn-primary">Request access</button></form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

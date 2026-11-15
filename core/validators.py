@@ -108,8 +108,8 @@ def validate_upload(upload, kind):
         )
 
 
-def validate_thumbnail(upload):
-    validate_upload(upload, "thumbnail")
+def _validate_image(upload, kind, label):
+    validate_upload(upload, kind)
     # Defence in depth: let Pillow parse the image completely.
     from PIL import Image
 
@@ -121,11 +121,19 @@ def validate_thumbnail(upload):
             image.verify()
             actual = image.format
     except Exception as exc:
-        raise ValidationError("The thumbnail is not a valid image.", code="invalid_image") from exc
+        raise ValidationError(f"The {label} is not a valid image.", code="invalid_image") from exc
     finally:
         upload.seek(0)
     if actual != expected:
-        raise ValidationError("The thumbnail content does not match its file type.", code="invalid_image")
+        raise ValidationError(f"The {label} content does not match its file type.", code="invalid_image")
+
+
+def validate_thumbnail(upload):
+    _validate_image(upload, "thumbnail", "thumbnail")
+
+
+def validate_avatar(upload):
+    _validate_image(upload, "avatar", "profile picture")
 
 
 def validate_material(upload):

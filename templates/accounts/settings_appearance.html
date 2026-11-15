@@ -1,0 +1,15 @@
+{% extends "accounts/settings_base.html" %}
+{% block settings_content %}
+<section class="card space-y-4">
+  <h2 class="text-lg font-semibold">Appearance</h2>
+  <p class="text-sm text-slate-500">Saved to your account, so it applies on every device after you log in.</p>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <fieldset class="space-y-2"><legend class="text-sm font-medium">Theme</legend>
+      {% for radio in form.theme %}<label class="flex items-center gap-2 text-sm">{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}
+    </fieldset>
+    <div><label for="{{ form.font.id_for_label }}" class="block text-sm font-medium">Font</label>{{ form.font }}</div>
+    <button type="submit" class="btn btn-primary">Save appearance</button>
+  </form>
+</section>
+{% endblock %}

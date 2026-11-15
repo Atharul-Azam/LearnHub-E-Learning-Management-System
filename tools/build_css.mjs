@@ -18,7 +18,7 @@ const require = createRequire(join(root, "package.json"));
 const INPUT = join(root, "static_src", "input.css");
 const OUTPUT = join(root, "static", "css", "app.css");
 const SCAN_DIRS = ["templates", "static/js"];
-const SCAN_FILES = ["accounts/forms.py", "courses/forms.py", "materials/forms.py", "assignments/forms.py"];
+const SCAN_FILES = ["accounts/forms.py", "courses/forms.py", "materials/forms.py", "assignments/forms.py", "community/forms.py"];
 const SCAN_EXT = new Set([".html", ".js", ".py"]);
 
 function walk(dir, files = []) {

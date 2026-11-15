@@ -1,38 +1,116 @@
 {% extends "base.html" %}
 {% block title %}Student dashboard{% endblock %}
 {% block content %}
-<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-  <div>
-    <h1 class="text-2xl font-bold">Welcome, {{ user.name }}</h1>
-    <p class="text-slate-500">Continue learning or find a new course.</p>
-  </div>
-  <a class="btn btn-primary" href="{% url 'courses:browse' %}">Browse Courses</a>
-</div>
-
-<div class="mb-3 flex items-center justify-between">
-  <h2 class="text-lg font-semibold">My enrolled courses</h2>
-  {% if enrollment_total > 6 %}<a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:my_courses' %}">View all</a>{% endif %}
-</div>
-{% if enrollments %}
-<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-  {% for enrollment in enrollments %}
-  {% with course=enrollment.course %}
-  <article class="card flex flex-col overflow-hidden !p-0">
-    {% include "partials/thumb.html" %}
-    <div class="flex flex-1 flex-col gap-2 p-4">
-      <h3 class="text-lg font-semibold">{{ course.title }}</h3>
-      <p class="text-sm text-slate-500">By {{ course.teacher.name }}</p>
-      <div>
-        <div class="mb-1 flex justify-between text-xs text-slate-500"><span>Progress</span><span>{{ enrollment.progress }}%</span></div>
-        <div class="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow="{{ enrollment.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="h-full bg-indigo-600" style="width: {{ enrollment.progress }}%"></div></div>
+<div class="space-y-8">
+  <section class="hero flex flex-wrap items-center gap-5" aria-label="Welcome">
+    <span class="rounded-full p-1" style="background: rgb(255 255 255 / 0.22)">{% include "partials/avatar.html" with person=user size="h-16 w-16" %}</span>
+    <div class="min-w-0 flex-1">
+      <h1 class="break-words text-2xl font-bold tracking-tight sm:text-3xl">Welcome back, {{ user.name }}</h1>
+      <p class="mt-1 text-sm" style="color: rgb(224 231 255)">Student ID: <span class="font-mono font-semibold" style="color:#fff">{{ user.public_id|default:"–" }}</span></p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <span class="chip">{% include "partials/icon.html" with name="book" css="h-3.5 w-3.5" %}{{ enrollment_total }} course{{ enrollment_total|pluralize }}</span>
+        <span class="chip">{% include "partials/icon.html" with name="tasks" css="h-3.5 w-3.5" %}{{ pending_total }} to do</span>
       </div>
-      <a class="btn btn-primary mt-auto" href="{% url 'courses:open_course' course.pk %}">Open Course</a>
     </div>
-  </article>
-  {% endwith %}
-  {% endfor %}
+    <div class="flex flex-wrap gap-2">
+      {% if recent_courses %}<a class="btn btn-light" href="{% url 'courses:open_course' recent_courses.0.course.pk %}">{% include "partials/icon.html" with name="play" css="h-4 w-4" %}Resume learning</a>{% endif %}
+      <a class="btn btn-glass" href="{% url 'courses:browse' %}">Browse Courses</a>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Summary">
+    {% include "partials/stat_card.html" with label="Enrolled courses" value=enrollment_total icon="book" theme="indigo" %}
+    {% include "partials/stat_card.html" with label="Completed courses" value=completed_total icon="check" theme="emerald" %}
+    {% include "partials/stat_card.html" with label="Overall progress" value=overall_progress|stringformat:"d%%" icon="trend" theme="violet" bar=overall_progress %}
+    {% include "partials/stat_card.html" with label="Assignments to do" value=pending_total tone="text-amber-600" icon="tasks" theme="amber" %}
+  </section>
+
+  {% if recent_courses %}
+  <section aria-labelledby="recent-h">
+    <h2 id="recent-h" class="section-title mb-3">Recently accessed</h2>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {% for e in recent_courses %}
+      <a class="card flex items-center gap-3 !p-3" href="{% url 'courses:open_course' e.course.pk %}">
+        {% include "partials/cover.html" with course=e.course css="h-14 w-14 shrink-0 rounded-xl" mini=True %}
+        <span class="min-w-0 flex-1">
+          <span class="line-clamp-2 block text-sm font-semibold leading-snug">{{ e.course.title }}</span>
+          <span class="mt-0.5 block text-xs text-slate-500">{{ e.last_accessed_at|timesince }} ago · {{ e.progress }}%</span>
+          <span class="progress mt-1.5 block !h-1" aria-hidden="true"><span class="progress-fill block{% if e.progress >= 100 %} progress-done{% endif %}" style="width: {{ e.progress }}%"></span></span>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section aria-labelledby="enrolled-h">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 id="enrolled-h" class="section-title">My courses</h2>
+      {% if enrollment_total > 6 %}<a class="link" href="{% url 'courses:my_courses' %}">View all</a>{% endif %}
+    </div>
+    {% if enrollments %}
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {% for enrollment in enrollments %}{% with course=enrollment.course %}
+      <article class="course-card">
+        {% include "partials/cover.html" with css="h-36 w-full" %}
+        <div class="flex flex-1 flex-col gap-3 p-4">
+          <div>
+            <h3 class="line-clamp-2 text-base font-semibold leading-snug tracking-tight">{{ course.title }}</h3>
+            <p class="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">{% include "partials/avatar.html" with person=course.teacher size="h-5 w-5" %}<span class="truncate">By {{ course.teacher.name }}</span></p>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            {% if enrollment.progress >= 100 %}<span class="badge badge-green">Completed</span>{% else %}<span class="badge badge-green">Enrolled</span>{% endif %}
+            {% if course.is_private %}<span class="badge badge-slate">Private</span>{% endif %}
+          </div>
+          <div class="mt-auto space-y-3">
+            {% include "partials/progress_bar.html" with value=enrollment.progress %}
+            <a class="btn btn-primary w-full" href="{% url 'courses:open_course' course.pk %}">{% if enrollment.progress %}Continue Learning{% else %}Start Learning{% endif %}</a>
+          </div>
+        </div>
+      </article>
+      {% endwith %}{% endfor %}
+    </div>
+    {% else %}
+    <div class="card py-10 text-center text-slate-500">You are not enrolled in any course yet. <a class="link" href="{% url 'courses:browse' %}">Browse the available courses</a>.</div>
+    {% endif %}
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="card space-y-3" aria-labelledby="todo-h">
+      <h2 id="todo-h" class="panel-title"><span class="stat-icon stat-amber">{% include "partials/icon.html" with name="clock" css="h-5 w-5" %}</span>Pending assignments &amp; deadlines</h2>
+      {% for a in pending_assignments %}
+      <a class="flex items-center justify-between gap-3 rounded-xl border-b border-slate-100 px-2 py-2 transition hover:bg-slate-50 last:border-0" href="{% url 'assignments:student_detail' a.pk %}">
+        <span class="min-w-0"><span class="block truncate font-medium">{{ a.title }}</span><span class="block truncate text-xs text-slate-500">{{ a.course.title }}</span></span>
+        <span class="shrink-0 text-right text-xs">{% if a.overdue %}<span class="badge badge-red">Overdue</span>{% else %}<span class="badge badge-amber">Due</span>{% endif %}<span class="block text-slate-500">{{ a.deadline|date:"d M, H:i" }}</span></span>
+      </a>
+      {% empty %}<p class="text-sm text-slate-500">Nothing pending. 🎉</p>{% endfor %}
+    </section>
+
+    <section class="card space-y-3" aria-labelledby="marks-h">
+      <h2 id="marks-h" class="panel-title"><span class="stat-icon stat-emerald">{% include "partials/icon.html" with name="check" css="h-5 w-5" %}</span>Recent marks &amp; feedback</h2>
+      {% for s in recent_marks %}
+      <a class="flex items-center justify-between gap-3 rounded-xl border-b border-slate-100 px-2 py-2 transition hover:bg-slate-50 last:border-0" href="{% url 'assignments:student_detail' s.assignment_id %}">
+        <span class="min-w-0"><span class="block truncate font-medium">{{ s.assignment.title }}</span><span class="block truncate text-xs text-slate-500">{{ s.assignment.course.title }}</span></span>
+        <span class="badge badge-indigo shrink-0 !text-sm">{{ s.marks }} / {{ s.assignment.max_marks }}</span>
+      </a>
+      {% empty %}<p class="text-sm text-slate-500">No marked work yet.</p>{% endfor %}
+    </section>
+  </div>
+
+  <section aria-labelledby="fav-h">
+    <div class="mb-3 flex items-center justify-between"><h2 id="fav-h" class="section-title">Favourite courses</h2><a class="link" href="{% url 'courses:favourites' %}">All favourites</a></div>
+    {% if favourites %}
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {% for f in favourites %}<a class="card flex items-center gap-3 !p-3" href="{% url 'courses:detail' f.course.pk %}">{% include "partials/cover.html" with course=f.course css="h-12 w-12 shrink-0 rounded-xl" mini=True %}<span class="min-w-0"><span class="line-clamp-2 block text-sm font-semibold leading-snug">{{ f.course.title }}</span><span class="block truncate text-xs text-slate-500">{{ f.course.teacher.name }}</span></span></a>{% endfor %}
+    </div>
+    {% else %}<div class="card text-sm text-slate-500">No favourites yet. Use the star on a course card to save it.</div>{% endif %}
+  </section>
+
+  <section class="card space-y-2" aria-labelledby="notif-h">
+    <div class="flex items-center justify-between"><h2 id="notif-h" class="panel-title"><span class="stat-icon stat-sky">{% include "partials/icon.html" with name="inbox" css="h-5 w-5" %}</span>Recent notifications</h2><a class="link" href="{% url 'notifications:list' %}">View all</a></div>
+    {% for note in nav_notifications|slice:":5" %}
+    <form method="post" action="{% url 'notifications:open' note.pk %}">{% csrf_token %}<button type="submit" class="flex w-full items-start gap-2 rounded-xl px-2 py-1.5 text-left text-sm transition hover:bg-slate-50 {% if not note.is_read %}font-semibold{% else %}text-slate-500{% endif %}">{% if not note.is_read %}<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" aria-hidden="true"></span>{% else %}<span class="mt-1.5 h-2 w-2 shrink-0" aria-hidden="true"></span>{% endif %}<span>{{ note.message }}</span></button></form>
+    {% empty %}<p class="text-sm text-slate-500">You are all caught up.</p>{% endfor %}
+  </section>
 </div>
-{% else %}
-<div class="card text-center text-slate-500">You are not enrolled in any course yet. <a class="text-indigo-700 hover:underline" href="{% url 'courses:browse' %}">Browse the available courses</a>.</div>
-{% endif %}
 {% endblock %}

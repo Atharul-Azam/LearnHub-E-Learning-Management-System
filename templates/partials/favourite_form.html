@@ -1,0 +1,5 @@
+<form method="post" action="{% url 'courses:favourite_toggle' course.pk %}" class="flex">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <button type="submit" class="btn btn-secondary w-full" aria-pressed="{% if is_favourite %}true{% else %}false{% endif %}"><span class="{% if is_favourite %}text-amber-500{% endif %}" aria-hidden="true">{% if is_favourite %}&#9733;{% else %}&#9734;{% endif %}</span>{% if is_favourite %} Saved{% else %} Save{% endif %}</button>
+</form>

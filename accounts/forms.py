@@ -59,3 +59,103 @@ class LoginForm(forms.Form):
 
     def clean_email(self):
         return self.cleaned_data["email"].strip().lower()
+
+
+class ResendVerificationForm(forms.Form):
+    email = forms.CharField(label="E-mail address", widget=forms.EmailInput(attrs={"class": INPUT, "autocomplete": "email"}))
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()
+
+
+# ---------------------------------------------------------------- settings
+from django.contrib.auth.forms import PasswordChangeForm  # noqa: E402
+
+from core.validators import validate_avatar  # noqa: E402
+
+FILE_INPUT = "block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-indigo-700"
+SELECT = INPUT
+
+
+class ProfileForm(forms.ModelForm):
+    """Edit name, biography, expertise (teachers) and the profile picture. The ID is never editable."""
+
+    profile_picture = forms.ImageField(
+        required=False,
+        validators=[validate_avatar],
+        widget=forms.FileInput(attrs={"class": FILE_INPUT, "accept": "image/png,image/jpeg,image/webp"}),
+        help_text="PNG, JPG or WEBP, up to 2 MB.",
+    )
+    remove_picture = forms.BooleanField(required=False, label="Remove my picture (use the default avatar)")
+
+    class Meta:
+        model = User
+        fields = ["name", "bio", "expertise", "profile_picture"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": INPUT, "autocomplete": "name"}),
+            "bio": forms.Textarea(attrs={"class": INPUT, "rows": 4}),
+            "expertise": forms.TextInput(attrs={"class": INPUT}),
+        }
+        labels = {"bio": "Short biography", "expertise": "Expertise / teaching interests"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._old_picture = self.instance.profile_picture.name if self.instance.profile_picture else ""
+        if self.instance.role != User.Role.TEACHER:
+            del self.fields["bio"]
+            del self.fields["expertise"]
+        if not self._old_picture:
+            del self.fields["remove_picture"]
+
+    def clean_name(self):
+        name = normalise_text(self.cleaned_data["name"])
+        if not name:
+            raise forms.ValidationError("Name is required.")
+        return name
+
+    def save(self, commit=True):
+        from core.files import schedule_file_delete
+
+        user = super().save(commit=False)
+        if self.cleaned_data.get("remove_picture") and "profile_picture" not in self.files:
+            user.profile_picture = ""
+        user.save()
+        new_name = user.profile_picture.name if user.profile_picture else ""
+        if self._old_picture and self._old_picture != new_name:
+            schedule_file_delete(user.profile_picture.storage, self._old_picture)
+        return user
+
+
+class StyledPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = INPUT
+
+
+class NotificationPreferencesForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["notify_courses", "notify_assignments", "notify_discussion"]
+
+
+class AppearanceForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["theme", "font"]
+        widgets = {"theme": forms.RadioSelect, "font": forms.Select(attrs={"class": SELECT})}
+
+
+class DeleteAccountForm(forms.Form):
+    password = forms.CharField(label="Your password", strip=False, widget=forms.PasswordInput(attrs={"class": INPUT, "autocomplete": "current-password"}))
+    understand = forms.BooleanField(label="I understand that this permanently deletes my account and cannot be undone.")
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError("The password is incorrect.")
+        return password

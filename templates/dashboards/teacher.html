@@ -1,41 +1,67 @@
 {% extends "base.html" %}
 {% block title %}Teacher dashboard{% endblock %}
 {% block content %}
-<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-  <div>
-    <h1 class="text-2xl font-bold">Welcome, {{ user.name }}</h1>
-    <p class="text-slate-500">Manage your courses, materials and assignments.</p>
+<section class="hero hero-teal mb-6 flex flex-wrap items-center gap-5" aria-label="Welcome">
+  <span class="rounded-full p-1" style="background: rgb(255 255 255 / 0.22)">{% include "partials/avatar.html" with person=user size="h-16 w-16" %}</span>
+  <div class="min-w-0 flex-1">
+    <h1 class="break-words text-2xl font-bold tracking-tight sm:text-3xl">Welcome, {{ user.name }}</h1>
+    <p class="mt-1 text-sm" style="color: rgb(224 242 254)">Teacher ID: <span class="font-mono font-semibold" style="color:#fff">{{ user.public_id|default:"–" }}</span></p>
   </div>
-  <a class="btn btn-primary" href="{% url 'courses:teacher_create' %}">Create Course</a>
-</div>
+  <div class="flex flex-wrap gap-2">
+    <a class="btn btn-light" href="{% url 'courses:teacher_create' %}">{% include "partials/icon.html" with name="plus" css="h-4 w-4" %}Create Course</a>
+    <a class="btn btn-glass" href="{% url 'courses:teacher_requests_all' %}">Access requests{% if pending_requests %} ({{ pending_requests }}){% endif %}</a>
+    <a class="btn btn-glass" href="{% url 'dashboards:analytics' %}">Analytics</a>
+  </div>
+</section>
 
-<div class="mb-6 grid grid-cols-2 gap-4">
-  <div class="card"><p class="text-sm text-slate-500">My courses</p><p class="mt-1 text-3xl font-bold">{{ course_total }}</p></div>
-  <div class="card"><p class="text-sm text-slate-500">Submissions awaiting review</p><p class="mt-1 text-3xl font-bold text-amber-600">{{ pending_reviews }}</p></div>
+<section class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5" aria-label="Summary">
+  {% include "partials/stat_card.html" with label="Courses created" value=course_total icon="layers" theme="indigo" %}
+  {% include "partials/stat_card.html" with label="Enrolled students" value=student_total icon="users" theme="sky" %}
+  {% include "partials/stat_card.html" with label="Public / private" value=public_total hint=private_total|stringformat:"d private" icon="book" theme="violet" %}
+  {% include "partials/stat_card.html" with label="Pending access requests" value=pending_requests tone="text-amber-600" icon="inbox" theme="amber" %}
+  {% include "partials/stat_card.html" with label="Submissions awaiting review" value=pending_reviews tone="text-amber-600" icon="tasks" theme="rose" %}
+</section>
+
+<div class="mb-8 grid gap-6 lg:grid-cols-2">
+  <section class="card space-y-3" aria-labelledby="perf-h">
+    <h2 id="perf-h" class="panel-title"><span class="stat-icon stat-indigo">{% include "partials/icon.html" with name="chart" css="h-5 w-5" %}</span>Course performance</h2>
+    {% for row in performance %}
+    <div class="border-b border-slate-100 pb-3 last:border-0"><div class="flex flex-wrap justify-between gap-x-2"><a class="font-medium text-indigo-700 hover:underline" href="{% url 'courses:teacher_detail' row.course.pk %}">{{ row.course.title }}</a><span class="text-xs text-slate-500">{{ row.students }} student{{ row.students|pluralize }} · avg {{ row.avg_progress }}%</span></div><div class="progress mt-1.5 !h-1.5" aria-hidden="true"><div class="progress-fill" style="width: {{ row.avg_progress }}%"></div></div><p class="mt-1 text-xs text-slate-500">{{ row.submissions }} submission{{ row.submissions|pluralize }}, {{ row.pending }} to review</p></div>
+    {% empty %}<p class="text-sm text-slate-500">Create a course to see statistics.</p>{% endfor %}
+  </section>
+  <section class="card space-y-3" aria-labelledby="act-h">
+    <h2 id="act-h" class="panel-title"><span class="stat-icon stat-sky">{% include "partials/icon.html" with name="clock" css="h-5 w-5" %}</span>Recent activity</h2>
+    {% for when, text in activity %}<p class="text-sm"><span class="text-slate-700">{{ text }}</span> <span class="text-xs text-slate-400">· {{ when|timesince }} ago</span></p>
+    {% empty %}<p class="text-sm text-slate-500">No activity yet.</p>{% endfor %}
+    {% if pending_request_list %}
+    <h3 class="pt-2 text-sm font-semibold">Waiting for your approval</h3>
+    {% for item in pending_request_list %}<p class="text-sm">{{ item.student.name }} → <a class="text-indigo-700 hover:underline" href="{% url 'courses:teacher_requests' item.course_id %}">{{ item.course.title }}</a></p>{% endfor %}
+    {% endif %}
+  </section>
 </div>
 
 <div class="mb-3 flex items-center justify-between">
-  <h2 class="text-lg font-semibold">My courses</h2>
-  {% if course_total > 6 %}<a class="text-sm text-indigo-700 hover:underline" href="{% url 'courses:teacher_list' %}">View all</a>{% endif %}
+  <h2 class="section-title">My courses</h2>
+  {% if course_total > 6 %}<a class="link" href="{% url 'courses:teacher_list' %}">View all</a>{% endif %}
 </div>
 {% if courses %}
-<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
   {% for course in courses %}
-  <article class="card flex flex-col overflow-hidden !p-0">
-    {% include "partials/thumb.html" %}
-    <div class="flex flex-1 flex-col gap-2 p-4">
-      <div class="flex items-center justify-between gap-2">
-        <span class="badge badge-indigo">{{ course.category }}</span>
+  <article class="course-card">
+    {% include "partials/cover.html" with css="h-36 w-full" %}
+    <div class="flex flex-1 flex-col gap-3 p-4">
+      <div class="flex flex-wrap items-center gap-1.5">
         <span class="badge {% if course.is_published %}badge-green{% else %}badge-amber{% endif %}">{{ course.get_visibility_display }}</span>
+        {% if course.is_private %}<span class="badge badge-slate">Private</span>{% endif %}
       </div>
-      <h3 class="text-lg font-semibold">{{ course.title }}</h3>
-      <p class="text-sm text-slate-500">{{ course.enrollment_total }} student{{ course.enrollment_total|pluralize }} enrolled</p>
-      <a class="btn btn-primary mt-auto" href="{% url 'courses:teacher_detail' course.pk %}">Manage course</a>
+      <h3 class="line-clamp-2 text-base font-semibold leading-snug tracking-tight">{{ course.title }}</h3>
+      <p class="inline-flex items-center gap-1 text-sm text-slate-500">{% include "partials/icon.html" with name="users" css="h-4 w-4" %}{{ course.enrollment_total }} student{{ course.enrollment_total|pluralize }} enrolled</p>
+      <a class="btn btn-primary mt-auto w-full" href="{% url 'courses:teacher_detail' course.pk %}">Manage course</a>
     </div>
   </article>
   {% endfor %}
 </div>
 {% else %}
-<div class="card text-center text-slate-500">You have not created any courses yet. <a class="text-indigo-700 hover:underline" href="{% url 'courses:teacher_create' %}">Create your first course</a>.</div>
+<div class="card py-10 text-center text-slate-500">You have not created any courses yet. <a class="link" href="{% url 'courses:teacher_create' %}">Create your first course</a>.</div>
 {% endif %}
 {% endblock %}

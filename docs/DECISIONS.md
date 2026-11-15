@@ -35,10 +35,31 @@ Status values: *Resolved* (a documented choice was made) or *Unresolved* (needs 
 | D-17 | Late submissions | DD §6.3. | `late ⇔ server time at submission > deadline`. A submission exactly at the deadline is on time. The flag is stored once (DD 6.3 `markLate()`); a teacher editing the deadline later does not change existing submissions. | Resolved |
 | D-18 | Marks | SRS 14.1: within the maximum marks. | Decimal marks with up to 2 decimal places, 0 ≤ marks ≤ max. Maximum marks cannot be lowered below marks already awarded. | Resolved |
 
+## B2. Advanced-feature release – scope change and design decisions
+
+| ID | Topic | Decision |
+|----|-------|----------|
+| **D-19** | **Scope change.** The SRS marked profile management, notifications and discussion as out of scope. | The user's later request explicitly asks for them, so they were added. The SRS/DD baseline (UC1–UC17) is unchanged; new behaviour is traced in `TRACEABILITY.md` §6. |
+| D-20 | Existing users and e-mail verification | The migration marks every existing account as verified, so nobody is locked out. Only accounts created after the release must verify. Administrators created with `createsuperuser` are verified. |
+| D-21 | `is_active` | `is_active = (status == Active) and email_verified`, so an unverified account can neither log in nor keep a session. Teacher login needs **both** verification and approval. |
+| D-22 | ID format and timing | `STU-000001` / `TCH-000001`. Students get the ID at registration, teachers when approved (the existing approval workflow). Uniqueness is guaranteed by a UNIQUE column and a CHECK constraint tying the prefix to the role; a race simply retries with the next number. Migration backfills approved teachers (Active/Deactivated) and all students in creation order. Admins have no ID. |
+| D-23 | Verification token | Django's `PasswordResetTokenGenerator` subclass: HMAC-signed, 24 h by default (`EMAIL_VERIFICATION_TIMEOUT_SECONDS`), invalid once used (the hash includes the verified flag) or if the e-mail changes. `PASSWORD_RESET_TIMEOUT` is set to the same value (LearnHub has no password-reset feature). Resend: answer is identical for unknown/verified accounts; one e-mail per address per minute (local-memory cache, so per server process). |
+| D-24 | Public vs private | A new `Course.access` field, separate from the existing published/hidden `visibility`. Private courses are not listed and answer **404** (not 403) to anyone without access, so their existence is not disclosed. Existing courses become public. |
+| D-25 | How access is granted | Approving a request creates an ordinary `Enrollment`; revoking deletes it (submissions are kept; the request row becomes *Revoked*). Existing progress, files, assignments and dashboards therefore need no special cases. One request per student per course (UNIQUE). A rejected or revoked student cannot re-request, but the teacher may approve them from the request list. |
+| D-26 | Invitation link | `secrets.token_urlsafe(32)` stored on the course; the link needs a logged-in **student**, shows only title/description/teacher and a request button. Regenerate (optionally with expiry 7/30/90 days) and disable both invalidate the old link immediately. Switching a course to public removes the token; switching to private creates one. Already-enrolled students keep access when a course turns private. |
+| D-27 | Direct enrolment for public courses | Unchanged (no approval). "Enrollment approval/rejection" notifications therefore apply to private-course access requests only; teachers get a "student enrolled" notification for public courses. |
+| D-28 | Notifications | In-app only (no e-mail). One row per event per user (UNIQUE recipient + dedupe key). Categories can be switched off in Settings. Deadline reminders (48 h before) are created lazily when a student opens the dashboard or notification list, because there is no background scheduler. |
+| D-29 | Discussion | One level of replies. Members = owning teacher + students enrolled in a published course. Authors edit/delete their own posts; the teacher deletes any post in their own course; an administrator deletes any post (list at `/manage/discussions/`). Admins do not edit. Deleting an account keeps its posts as "Deleted user". |
+| D-30 | Account deletion | Password + checkbox required. Students: own enrollments, progress, submissions and favourites are deleted (consistent with D-5). Teachers: blocked while they own courses (consistent with D-6). Administrators: cannot self-delete. All sessions are revoked. |
+| D-31 | Profile pictures | PNG/JPG/WEBP, 2 MB (`MAX_AVATAR_MB`), real-content and Pillow checks, UUID filename, old file removed after commit. Visible to any signed-in user (they appear in discussions); not public. Default avatar = the user's initial. |
+| D-32 | Theme and font | Stored on the account (so they survive logout/login on any device). Dark mode re-maps Tailwind's colour variables in `static_src/input.css`; "System" follows the OS. Fonts are system font stacks only (no external font downloads). |
+| D-33 | "Completed courses" | A course counts as completed when the student's cached progress is 100 % (progress formula unchanged, D-3). |
+| D-34 | Django Admin | The request says "preserve Django Admin", but the project never enabled it (Technical decision below). It was not added; the admin pages remain the management interface. |
+
 ## C. Technical decisions (not business requirements)
 
 * Custom user model (`accounts.User`): e-mail is the login name; `is_active` is derived from `status == Active`, so Django's own session loading ends sessions of deactivated users automatically.
-* No Django admin site is enabled (the administrator uses the documented admin pages only).
+* No Django admin site is enabled (the administrator uses the documented admin pages only) – see D-34.
 * Media files have **no public URL**. Every file is streamed by a view that checks role, ownership and enrollment (`core/files.py::file_response`), with `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`; only a small allow-list of types is displayed inline, everything else is forced to download.
 * Files are stored under server-generated UUID names; the client's filename is kept only as a sanitised display name.
 * Tailwind CSS v4 is compiled by `tools/build_css.mjs` using the `tailwindcss` package's compile API; the compiled `static/css/app.css` is committed, so Node is only needed to change styles.

@@ -1,0 +1,14 @@
+{% load ui %}{# Course cover. Usage: include with course=... [css="h-40 w-full"] [mini=True]. Shows the uploaded thumbnail if there is one, else a generated cover. #}
+{% if course.thumbnail %}
+<div class="cover cover-photo {{ css|default:'h-40 w-full' }}">
+  <img src="{% url 'courses:thumbnail' course.pk %}" alt="Thumbnail of {{ course.title }}" class="h-full w-full object-cover" loading="lazy">
+  {% if not mini %}<span class="cover-chip">{{ course.category|default:"Course" }}</span>{% endif %}
+</div>
+{% else %}
+<div class="cover cover-{{ course.category|cover_theme }} {{ css|default:'h-40 w-full' }}" role="img" aria-label="{{ course.category|default:'Course' }} course cover">
+  <span class="cover-orb cover-orb-1" aria-hidden="true"></span>
+  <span class="cover-orb cover-orb-2" aria-hidden="true"></span>
+  <svg class="cover-icon{% if mini %} cover-icon-mini{% endif %}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">{{ course.category|cover_icon }}</svg>
+  {% if not mini %}<span class="cover-chip">{{ course.category|default:"Course" }}</span>{% endif %}
+</div>
+{% endif %}

@@ -10,6 +10,8 @@ urlpatterns = [
     path("", include("materials.urls")),
     path("", include("assignments.urls")),
     path("", include("progress.urls")),
+    path("", include("notifications.urls")),
+    path("", include("community.urls")),
 ]
 
 handler403 = "core.views.permission_denied"

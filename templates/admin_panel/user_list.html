@@ -29,12 +29,13 @@
 {% if page.object_list %}
 <div class="card overflow-x-auto !p-0">
   <table class="table">
-    <thead><tr><th>Name</th><th>E-mail</th><th>Role</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <thead><tr><th>Name</th><th>ID</th><th>E-mail</th><th>Role</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
     <tbody>
     {% for account in page %}
       <tr>
         <td class="font-medium">{{ account.name }}</td>
-        <td>{{ account.email }}</td>
+        <td class="font-mono text-xs">{{ account.public_id|default:"–" }}</td>
+        <td>{{ account.email }}{% if not account.email_verified %} <span class="badge badge-amber">unverified</span>{% endif %}</td>
         <td>{{ account.get_role_display }}</td>
         <td><span class="badge {% if account.status == 'active' %}badge-green{% elif account.status == 'pending' %}badge-amber{% else %}badge-red{% endif %}">{{ account.get_status_display }}</span></td>
         <td class="text-right"><a class="btn btn-secondary" href="{% url 'accounts:user_detail' account.pk %}">View</a></td>

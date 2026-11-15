@@ -87,3 +87,33 @@ Abbreviations – models: `U`=accounts.User, `C`=courses.Course, `E`=courses.Enr
 | Assignment | `assignments.Assignment` | FK course (CASCADE); optional attachment |
 | Submission | `assignments.Submission` | unique (assignment, student); `is_late`, `marks`, `feedback`, `reviewed` |
 | (progress tracking, SRS 20.2) | `progress.MaterialAccess` | unique (student, material) |
+
+## 6. Advanced-feature release (requested after the SRS/DD baseline)
+
+These features come from the user's "Advanced Feature Integration & UI/UX Enhancement" request, **not** from the SRS/DD. The SRS listed profile management, notifications and discussion forums as out of scope; the later request overrides that (see decisions D-19). Status legend: *Implemented* = code written; *Partial* = something requested is missing (stated); **no row is "Tested"** because the suite has not been executed (see `docs/TEST_REPORT.md`).
+
+| Req § | Feature | Where | Tests | Status |
+|------:|---------|-------|-------|--------|
+| 2 | E-mail verification: signed, expiring, single-use link; resend; blocked login; teacher approval stays separate | `accounts/verification.py`, `accounts/views.py`, `User.email_verified`, `User.is_active` | `accounts/test_verification.py` | Implemented. SMTP must be configured (`.env`); console backend by default |
+| 3 | Student ID `STU-000001` / Teacher ID `TCH-000001`, unique, immutable, backfill | `accounts/identifiers.py`, `User.public_id` + DB constraints, migration `0002` | `PublicIdTests` | Implemented |
+| 4 | Profile (picture, bio, expertise, stats, ID, dates) | `accounts/views_profile.py`, `profile.html`, `settings_profile.html` | `accounts/test_profile.py` | Implemented |
+| 5 | Settings: account info, edit profile, password, picture, notifications, appearance (theme + font), security, logout, delete account | `accounts/views_profile.py`, `templates/accounts/settings_*.html`, `static_src/input.css` | `SettingsTests`, `AccountDeletionTests` | Implemented. Dark theme is CSS-variable based and **not visually verified** |
+| 6 | Public / private courses, invitation tokens, access requests, approve / reject / revoke, expiry, regenerate | `courses/models.py` (`access`, `invite_token`, `CourseAccessRequest`), `courses/private.py`, `views_teacher.py`, `views_student.py` | `courses/test_private.py` | Implemented |
+| 7 | Sharing with copy button | `partials/share_button.html`, `static/js/app.js`, `teacher/course_sharing.html` | `StudentSharingTests` | Implemented (clipboard JS not automatically tested) |
+| 8 | Redesigned student & teacher dashboards | `dashboards/stats.py`, `dashboards/*.html` | `dashboards/test_stats.py` | Implemented. "Subtle animations" limited to card hover/transition (disabled for reduced-motion) |
+| 9 | Discovery: search, category, teacher filter, newest/oldest, pagination, empty states | `courses/views_student.py::browse` | `DiscoveryTests` | Implemented. "Loading states": only the existing disable-on-submit button; no skeleton loaders |
+| 10 | Progress on cards and dashboard | existing `progress` app + `partials/progress_bar.html` | `progress/tests.py`, `test_stats.py` | Implemented (formula unchanged, D-3) |
+| 11 | In-app notifications (unread count, read, read-all, history, dropdown, deep links, dedupe) | `notifications/` | `notifications/tests.py` | Implemented. Deadline reminders are created when a student opens the dashboard/notification list (no background scheduler) |
+| 12 | Discussion & Q&A with moderation | `community/` | `community/tests.py` | Implemented |
+| 13 | Favourites (+ share public favourites) | `courses.Favourite`, `favourites.html` | `FavouriteTests` | Implemented |
+| 14 | Teacher analytics (own data only) | `dashboards/stats.py`, `analytics.html` | `test_stats.py` | Implemented (CSS bars, no chart library) |
+| 15 | Active tab indicator (desktop + mobile) | `core/context.py`, `base.html` | `NavigationTests` | Implemented |
+| 16 | UI/UX redesign, responsive, accessible | `base.html`, partials, `input.css` | – | Partial: sticky header, cards, focus rings, skip link, ARIA labels done; **responsive behaviour and contrast were not checked in a browser** |
+| 17A | Course announcements | `community.Announcement` | `AnnouncementTests` | Implemented |
+| 17B | Deadline management (due / overdue badges) | dashboards, assignment pages | `test_stats.py` | Implemented |
+| 17C | Categories | existing free-text category (D-9) + filter | `DiscoveryTests` | Unchanged |
+| 17D | Recently viewed | `Enrollment.last_accessed_at` | `test_recently_viewed_tracking` | Implemented |
+| 17E | Admin improvements | user list shows ID / unverified; discussion moderation page | `community/tests.py` | Partial: **Django Admin is not enabled in this project** (decision in section C of `DECISIONS.md`); user, teacher-approval, course visibility and statistics pages already existed |
+| 17F | Error handling | existing 403/404/500/CSRF pages + new friendly invitation errors | `core/tests.py` | Implemented |
+| 18 | Security | server-side checks everywhere; private courses 404 for non-members; tokens 256-bit | `core/tests.py::NewFeatureSecurityTests`, authorization matrix | Implemented |
+| 19 | Migrations that preserve data | `accounts/0002` (backfill), `courses/0002`, `notifications/0001`, `community/0001` | `makemigrations --check` still to be run | Written, **not applied** |

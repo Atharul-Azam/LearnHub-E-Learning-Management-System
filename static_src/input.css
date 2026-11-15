@@ -7,58 +7,276 @@
 @source "../courses/forms.py";
 @source "../materials/forms.py";
 @source "../assignments/forms.py";
+@source "../community/forms.py";
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @layer components {
+  /* ---- surfaces ---- */
   .card {
-    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm;
+    @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm;
   }
+  .panel-title {
+    @apply flex items-center gap-2 text-lg font-semibold tracking-tight;
+  }
+  .section-title {
+    @apply text-lg font-semibold tracking-tight text-slate-800;
+  }
+  .link {
+    @apply text-sm font-medium text-indigo-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded;
+  }
+
+  /* ---- buttons: one height (2.5rem), one radius ---- */
   .btn {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-primary {
-    @apply bg-indigo-600 text-white hover:bg-indigo-700;
+    background-image: linear-gradient(135deg, #4f46e5, #6d28d9);
+    box-shadow: 0 1px 2px rgb(79 70 229 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.15);
+    color: #fff; /* literal white: --color-white is remapped in dark mode */
   }
+  .btn-primary:hover { background-image: linear-gradient(135deg, #4338ca, #5b21b6); }
   .btn-secondary {
-    @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+    @apply border border-slate-300 bg-white text-slate-700 shadow-sm hover:border-indigo-300 hover:bg-slate-50;
   }
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700;
+    @apply bg-red-600 hover:bg-red-700;
+    color: #fff;
   }
+  .btn-light { /* on gradient banners */
+    background: #fff; color: #3730a3;
+  }
+  .btn-light:hover { background: #eef2ff; }
+  .btn-glass {
+    background: rgb(255 255 255 / 0.14); color: #fff; border: 1px solid rgb(255 255 255 / 0.35);
+  }
+  .btn-glass:hover { background: rgb(255 255 255 / 0.24); }
+
+  /* ---- navigation ---- */
   .nav-link {
-    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-indigo-700;
+    @apply rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500;
   }
+  .nav-link-active {
+    @apply bg-indigo-50 text-indigo-700 shadow-[inset_0_-2px_0_0_var(--color-indigo-600)];
+  }
+  .brand-mark {
+    background-image: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 10px rgb(79 70 229 / 0.35);
+  }
+
+  /* ---- forms ---- */
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500;
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30;
   }
+  .input-icon { @apply pl-9; }
+
+  /* ---- badges ---- */
   .badge {
-    @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
-  .badge-green {
-    @apply bg-green-100 text-green-800;
+  .badge-green { @apply bg-green-100 text-green-800; }
+  .badge-amber { @apply bg-amber-100 text-amber-800; }
+  .badge-red { @apply bg-red-100 text-red-800; }
+  .badge-indigo { @apply bg-indigo-100 text-indigo-800; }
+  .badge-slate { @apply bg-slate-100 text-slate-700; }
+
+  /* ---- tables ---- */
+  .table { @apply w-full text-left text-sm; }
+  .table th { @apply bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500; }
+  .table td { @apply border-t border-slate-100 px-4 py-3 align-middle; }
+  .table tbody tr { @apply transition-colors hover:bg-slate-50; }
+
+  /* ---- hero banner (dashboards) ---- */
+  .hero {
+    position: relative; overflow: hidden; border-radius: 1.25rem; color: #fff; padding: 1.5rem;
+    background:
+      radial-gradient(40rem 16rem at 100% 0%, rgb(167 139 250 / 0.55), transparent 60%),
+      radial-gradient(28rem 14rem at 0% 120%, rgb(56 189 248 / 0.35), transparent 60%),
+      linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6d28d9 100%);
+    box-shadow: 0 10px 30px -12px rgb(79 70 229 / 0.55);
   }
-  .badge-amber {
-    @apply bg-amber-100 text-amber-800;
+  .hero::after { /* soft dotted texture */
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.18;
+    background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 18px 18px;
+    mask-image: linear-gradient(120deg, transparent 35%, #000 100%);
+    -webkit-mask-image: linear-gradient(120deg, transparent 35%, #000 100%);
   }
-  .badge-red {
-    @apply bg-red-100 text-red-800;
+  .hero > * { position: relative; z-index: 1; }
+  .hero-teal {
+    background:
+      radial-gradient(36rem 14rem at 100% 0%, rgb(125 211 252 / 0.4), transparent 60%),
+      linear-gradient(135deg, #0f766e, #0e7490 55%, #4f46e5);
   }
-  .badge-indigo {
-    @apply bg-indigo-100 text-indigo-800;
+  .hero-slate {
+    background:
+      radial-gradient(36rem 14rem at 100% 0%, rgb(99 102 241 / 0.45), transparent 60%),
+      linear-gradient(135deg, #0f172a, #1e293b 60%, #312e81);
   }
-  .badge-slate {
-    @apply bg-slate-100 text-slate-700;
+  .hero .chip {
+    display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 9999px; padding: 0.15rem 0.7rem;
+    background: rgb(255 255 255 / 0.16); border: 1px solid rgb(255 255 255 / 0.28); font-size: 0.75rem; font-weight: 600;
   }
-  .table {
-    @apply w-full text-left text-sm;
+
+  /* ---- statistic tiles ---- */
+  .stat {
+    --tone: #6366f1;
+    position: relative; overflow: hidden; border-radius: 1rem; padding: 1.1rem 1.15rem;
+    border: 1px solid var(--color-slate-200);
+    background: linear-gradient(135deg, color-mix(in oklab, var(--tone) 13%, var(--color-white)) 0%, var(--color-white) 75%);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
   }
-  .table th {
-    @apply bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500;
+  .stat::before { /* accent edge */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--tone); opacity: 0.85;
   }
-  .table td {
-    @apply border-t border-slate-100 px-4 py-3 align-middle;
+  .stat-icon {
+    display: inline-grid; place-items: center; height: 2.5rem; width: 2.5rem; flex: none; border-radius: 0.8rem;
+    color: var(--tone); background: color-mix(in oklab, var(--tone) 16%, transparent);
+  }
+  .stat-indigo { --tone: #6366f1; }
+  .stat-emerald { --tone: #10b981; }
+  .stat-amber { --tone: #f59e0b; }
+  .stat-rose { --tone: #f43f5e; }
+  .stat-sky { --tone: #0ea5e9; }
+  .stat-violet { --tone: #8b5cf6; }
+
+  /* ---- progress ---- */
+  .progress { height: 0.5rem; overflow: hidden; border-radius: 9999px; background: var(--color-slate-200); }
+  .progress-fill { height: 100%; border-radius: 9999px; background-image: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width 0.4s ease; }
+  .progress-done { background-image: linear-gradient(90deg, #10b981, #34d399); }
+
+  /* ---- course covers (generated, no image needed) ---- */
+  .cover { position: relative; display: block; overflow: hidden; color: #fff; isolation: isolate; }
+  .cover::before { /* dot texture */
+    content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0.22;
+    background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 16px 16px;
+    mask-image: linear-gradient(135deg, #000 0%, transparent 70%); -webkit-mask-image: linear-gradient(135deg, #000 0%, transparent 70%);
+  }
+  .cover-orb { position: absolute; border-radius: 9999px; background: rgb(255 255 255 / 0.14); z-index: -1; }
+  .cover-orb-1 { height: 9rem; width: 9rem; right: -2.5rem; top: -3rem; }
+  .cover-orb-2 { height: 5.5rem; width: 5.5rem; left: -1.5rem; bottom: -2rem; background: rgb(255 255 255 / 0.10); }
+  .cover-icon { position: absolute; right: 1.1rem; bottom: 0.9rem; height: 4rem; width: 4rem; opacity: 0.92; filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.25)); }
+  .cover-icon-mini { right: 50%; bottom: 50%; transform: translate(50%, 50%); height: 55%; width: 55%; }
+  .cover-chip {
+    position: absolute; left: 0.8rem; top: 0.8rem; max-width: calc(100% - 1.6rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    border-radius: 9999px; padding: 0.15rem 0.65rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgb(15 23 42 / 0.35); border: 1px solid rgb(255 255 255 / 0.25); backdrop-filter: blur(4px); color: #fff;
+  }
+  .cover-photo::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: linear-gradient(to top, rgb(15 23 42 / 0.45), transparent); pointer-events: none; }
+  .cover-indigo { background-image: linear-gradient(135deg, #4338ca, #7c3aed); }
+  .cover-sky { background-image: linear-gradient(135deg, #0369a1, #06b6d4); }
+  .cover-emerald { background-image: linear-gradient(135deg, #047857, #34d399); }
+  .cover-amber { background-image: linear-gradient(135deg, #b45309, #f59e0b); }
+  .cover-rose { background-image: linear-gradient(135deg, #be123c, #fb7185); }
+  .cover-slate { background-image: linear-gradient(135deg, #334155, #64748b); }
+  .cover-violet { background-image: linear-gradient(135deg, #6d28d9, #c026d3); }
+  .cover-orange { background-image: linear-gradient(135deg, #c2410c, #fb923c); }
+  .cover-teal { background-image: linear-gradient(135deg, #0f766e, #2dd4bf); }
+
+  /* ---- course tiles ---- */
+  .course-card { @apply flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm; }
+  .avatar-fallback { background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
+
+  /* ---- action toolbar on course details: three controls, one height ---- */
+  .share-group { display: flex; min-width: 0; width: 100%; }
+  @media (min-width: 640px) { .share-group { flex: 1 1 15rem; width: auto; } }
+  .share-group .input { min-width: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; min-height: 2.5rem; }
+  .share-group .btn { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: -1px; flex: none; }
+}
+
+/* Literal white for text on solid accent colours (never remapped). */
+.text-on-accent { color: #fff; }
+
+/* ------------------------------------------------------------------ themes
+ * Dark mode re-maps the colour variables Tailwind's utilities already use, so every
+ * existing template follows the theme without per-element dark: classes.
+ * [data-theme=dark] is explicit; [data-theme=system] follows the OS setting. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    color-scheme: dark;
+    --color-white: oklch(0.21 0.034 264.665);
+    --color-slate-50: oklch(0.15 0.03 265);
+    --color-slate-100: oklch(0.25 0.04 264);
+    --color-slate-200: oklch(0.31 0.04 264);
+    --color-slate-300: oklch(0.38 0.04 264);
+    --color-slate-400: oklch(0.55 0.04 257);
+    --color-slate-500: oklch(0.7 0.035 257);
+    --color-slate-600: oklch(0.8 0.03 257);
+    --color-slate-700: oklch(0.87 0.02 257);
+    --color-slate-800: oklch(0.93 0.01 257);
+    --color-indigo-50: oklch(0.27 0.07 275);
+    --color-indigo-100: oklch(0.32 0.09 275);
+    --color-indigo-700: oklch(0.8 0.1 275);
+    --color-indigo-800: oklch(0.85 0.08 275);
+    --color-green-50: oklch(0.27 0.05 150);
+    --color-green-100: oklch(0.3 0.06 150);
+    --color-green-200: oklch(0.4 0.08 150);
+    --color-green-800: oklch(0.88 0.08 150);
+    --color-red-50: oklch(0.27 0.06 25);
+    --color-red-100: oklch(0.3 0.07 25);
+    --color-red-200: oklch(0.42 0.1 25);
+    --color-red-800: oklch(0.88 0.07 25);
+    --color-amber-50: oklch(0.29 0.05 85);
+    --color-amber-100: oklch(0.32 0.06 85);
+    --color-amber-200: oklch(0.45 0.08 85);
+    --color-amber-800: oklch(0.9 0.08 85);
+    --color-blue-50: oklch(0.27 0.06 255);
+    --color-blue-200: oklch(0.42 0.08 255);
+    --color-blue-800: oklch(0.88 0.06 255);
   }
 }
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-white: oklch(0.21 0.034 264.665);
+  --color-slate-50: oklch(0.15 0.03 265);
+  --color-slate-100: oklch(0.25 0.04 264);
+  --color-slate-200: oklch(0.31 0.04 264);
+  --color-slate-300: oklch(0.38 0.04 264);
+  --color-slate-400: oklch(0.55 0.04 257);
+  --color-slate-500: oklch(0.7 0.035 257);
+  --color-slate-600: oklch(0.8 0.03 257);
+  --color-slate-700: oklch(0.87 0.02 257);
+  --color-slate-800: oklch(0.93 0.01 257);
+  --color-indigo-50: oklch(0.27 0.07 275);
+  --color-indigo-100: oklch(0.32 0.09 275);
+  --color-indigo-700: oklch(0.8 0.1 275);
+  --color-indigo-800: oklch(0.85 0.08 275);
+  --color-green-50: oklch(0.27 0.05 150);
+  --color-green-100: oklch(0.3 0.06 150);
+  --color-green-200: oklch(0.4 0.08 150);
+  --color-green-800: oklch(0.88 0.08 150);
+  --color-red-50: oklch(0.27 0.06 25);
+  --color-red-100: oklch(0.3 0.07 25);
+  --color-red-200: oklch(0.42 0.1 25);
+  --color-red-800: oklch(0.88 0.07 25);
+  --color-amber-50: oklch(0.29 0.05 85);
+  --color-amber-100: oklch(0.32 0.06 85);
+  --color-amber-200: oklch(0.45 0.08 85);
+  --color-amber-800: oklch(0.9 0.08 85);
+  --color-blue-50: oklch(0.27 0.06 255);
+  --color-blue-200: oklch(0.42 0.08 255);
+  --color-blue-800: oklch(0.88 0.06 255);
+}
+
+/* ------------------------------------------------------------------- fonts */
+html[data-font="serif"] { font-family: Georgia, "Times New Roman", serif; }
+html[data-font="mono"] { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+
+/* Page backdrop: soft colour washes behind the content (follows the theme through the variables). */
+.app-bg {
+  background:
+    radial-gradient(48rem 24rem at 100% -8%, color-mix(in oklab, #6366f1 11%, transparent), transparent 70%),
+    radial-gradient(36rem 22rem at -8% 6%, color-mix(in oklab, #06b6d4 8%, transparent), transparent 70%),
+    var(--color-slate-50);
+  background-attachment: fixed;
+}
+.app-header { background: color-mix(in oklab, var(--color-white) 86%, transparent); backdrop-filter: blur(10px); }
+
+/* Subtle, optional motion; disabled for users who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .card, .course-card, .stat { transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease; }
+  a.card:hover, article.card:hover, .course-card:hover { box-shadow: 0 14px 28px -12px rgb(15 23 42 / 0.28); transform: translateY(-2px); border-color: color-mix(in oklab, #6366f1 45%, var(--color-slate-200)); }
+}
+details > summary::-webkit-details-marker { display: none; }

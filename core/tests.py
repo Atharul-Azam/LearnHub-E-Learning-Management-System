@@ -153,6 +153,7 @@ class DirectUrlAuthorizationTests(MediaTestCase):
         self.submission = make_submission(self.assignment, self.student)
         pending = make_teacher("pend@example.com", approved=False)
         c = self.course.pk
+        ALL = {"admin", "teacher", "other_teacher", "student", "outsider"}
         # url -> roles that may open it (everyone else must not get 200)
         self.matrix = {
             reverse("dashboards:admin"): {"admin"},
@@ -183,6 +184,23 @@ class DirectUrlAuthorizationTests(MediaTestCase):
             reverse("assignments:student_detail", args=[self.assignment.pk]): {"student"},
             reverse("materials:file", args=[self.material.pk]): {"student", "teacher", "admin"},
             reverse("assignments:submission_file", args=[self.submission.pk]): {"student", "teacher"},
+            # --- features added in the advanced-feature release
+            reverse("courses:teacher_sharing", args=[c]): {"teacher"},
+            reverse("courses:teacher_requests", args=[c]): {"teacher"},
+            reverse("courses:teacher_requests_all"): {"teacher", "other_teacher"},
+            reverse("dashboards:analytics"): {"teacher", "other_teacher"},
+            reverse("community:teacher_course", args=[c]): {"teacher"},
+            reverse("community:student_course", args=[c]): {"student"},
+            reverse("courses:favourites"): {"student", "outsider"},
+            reverse("notifications:list"): ALL,
+            reverse("accounts:profile"): ALL,
+            reverse("accounts:settings"): ALL,
+            reverse("accounts:settings_profile"): ALL,
+            reverse("accounts:settings_password"): ALL,
+            reverse("accounts:settings_notifications"): ALL,
+            reverse("accounts:settings_appearance"): ALL,
+            reverse("accounts:settings_security"): ALL,
+            reverse("accounts:settings_delete"): ALL,
         }
 
     def test_matrix(self):
@@ -316,3 +334,52 @@ class BackupRestoreTests(SimpleTestCase):  # SRS 24.1, 24.5
 
         with self.assertRaises(FileNotFoundError):
             create_backup("/nonexistent/db.sqlite3", "/nonexistent/media", "/tmp/never-created-backups")
+
+
+class NewFeatureSecurityTests(MediaTestCase):
+    """CSRF and method rules for the state-changing endpoints added with the advanced features."""
+
+    def setUp(self):
+        self.teacher = make_teacher("t@example.com")
+        self.student = make_student("s@example.com")
+        self.course = make_course(self.teacher, access="private")
+        from courses import private
+
+        private.sync_access(self.course)
+        self.course.refresh_from_db()
+        enroll(self.student, self.course)
+
+    def test_post_endpoints_enforce_csrf(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.student)
+        for url in (
+            reverse("accounts:sign_out_others"),
+            reverse("accounts:settings_delete"),
+            reverse("courses:favourite_toggle", args=[self.course.pk]),
+            reverse("notifications:read_all"),
+            reverse("community:post_create", args=[self.course.pk]),
+        ):
+            self.assertEqual(client.post(url, {}).status_code, 403, url)
+
+    def test_state_changing_urls_reject_get(self):
+        self.client.force_login(self.student)
+        for url in (
+            reverse("accounts:sign_out_others"),
+            reverse("notifications:read_all"),
+            reverse("community:post_create", args=[self.course.pk]),
+            reverse("courses:favourite_toggle", args=[self.course.pk]),
+        ):
+            self.assertEqual(self.client.get(url).status_code, 405, url)
+
+    def test_invitation_token_is_not_logged_in_or_leaked_through_public_pages(self):
+        self.client.force_login(self.student)
+        for url in (reverse("courses:browse"), reverse("courses:my_courses"), reverse("dashboards:student")):
+            self.assertNotContains(self.client.get(url), self.course.invite_token)
+
+    def test_verification_url_is_not_shown_on_pages(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            {"account_type": "student", "name": "N", "email": "n@example.com", "password": "Passw0rd123"},
+            follow=True,
+        )
+        self.assertNotContains(response, "/accounts/verify/")

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-2xl font-bold">Settings</h1>
+<div class="grid gap-6 md:grid-cols-4">
+  <nav class="card h-fit space-y-1 !p-2 md:col-span-1" aria-label="Settings sections">
+    {% for key, label, url in settings_sections %}
+    <a href="{{ url }}" class="nav-link block {% if section == key %}nav-link-active{% endif %}" {% if section == key %}aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+    <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit" class="nav-link block w-full text-left !text-red-700">Log out</button></form>
+  </nav>
+  <div class="space-y-5 md:col-span-3">{% block settings_content %}{% endblock %}</div>
+</div>
+{% endblock %}

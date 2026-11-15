@@ -1,0 +1,16 @@
+{% extends "accounts/settings_base.html" %}
+{% block settings_content %}
+<section class="card space-y-3">
+  <h2 class="text-lg font-semibold">Account security</h2>
+  <dl class="grid gap-3 text-sm sm:grid-cols-2">
+    <div><dt class="text-slate-500">E-mail verification</dt><dd class="font-medium">{% if user.email_verified %}Verified{% else %}Not verified{% endif %}</dd></div>
+    <div><dt class="text-slate-500">Last login</dt><dd class="font-medium">{{ user.last_login|date:"d M Y, H:i"|default:"–" }}</dd></div>
+  </dl>
+  <p class="text-sm"><a class="text-indigo-700 hover:underline" href="{% url 'accounts:settings_password' %}">Change your password</a></p>
+</section>
+<section class="card space-y-3">
+  <h2 class="text-lg font-semibold">Sign out of other devices</h2>
+  <p class="text-sm text-slate-500">Ends every other session of your account. This browser stays signed in.</p>
+  <form method="post" action="{% url 'accounts:sign_out_others' %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">Sign out other devices</button></form>
+</section>
+{% endblock %}

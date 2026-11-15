@@ -50,6 +50,7 @@ def assignment_add(request, course_pk):
             logger.exception("Assignment creation failed")
             messages.error(request, "The assignment could not be saved. Please try again.")
         else:
+            services.notify_new_assignment(assignment)
             messages.success(request, f"Assignment '{assignment.title}' was published to the enrolled students.")
             return redirect("courses:teacher_detail", pk=course.pk)
     elif request.method == "POST":

@@ -20,10 +20,18 @@ class CourseForm(forms.ModelForm):
         help_text="Optional. PNG, JPG, GIF or WEBP. A default image is used if you skip this.",
     )
     remove_thumbnail = forms.BooleanField(required=False, label="Remove the current thumbnail (use the default image)")
+    access = forms.ChoiceField(
+        choices=Course.Access.choices,
+        required=False,
+        label="Course type",
+        widget=forms.RadioSelect,
+        help_text="Public: listed for all students, who can enrol directly. "
+        "Private: never listed; students join through your invitation link and your approval.",
+    )
 
     class Meta:
         model = Course
-        fields = ["title", "description", "category", "thumbnail"]
+        fields = ["title", "description", "category", "access", "thumbnail"]
         widgets = {
             "title": forms.TextInput(attrs={"class": INPUT}),
             "description": forms.Textarea(attrs={"class": INPUT, "rows": 6}),
@@ -48,6 +56,10 @@ class CourseForm(forms.ModelForm):
             raise forms.ValidationError("Category is required.")
         return value
 
+    def clean_access(self):
+        # Omitted -> keep the current value (new courses default to public).
+        return self.cleaned_data.get("access") or self.instance.access or Course.Access.PUBLIC
+
     def clean_description(self):
         value = self.cleaned_data["description"].strip()
         if not value:
@@ -59,6 +71,9 @@ class CourseForm(forms.ModelForm):
         if self.cleaned_data.get("remove_thumbnail") and "thumbnail" not in self.files:
             course.thumbnail = ""
         course.save()
+        from . import private
+
+        private.sync_access(course)  # private -> invitation token exists; public -> no token
         new_name = course.thumbnail.name if course.thumbnail else ""
         if self._old_thumbnail and self._old_thumbnail != new_name:
             schedule_file_delete(course.thumbnail.storage, self._old_thumbnail)

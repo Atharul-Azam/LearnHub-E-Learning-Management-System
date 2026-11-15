@@ -1,0 +1,17 @@
+{% extends "accounts/settings_base.html" %}
+{% block settings_content %}
+<section class="card space-y-4">
+  <h2 class="text-lg font-semibold">Edit profile</h2>
+  <form method="post" enctype="multipart/form-data" class="space-y-4" novalidate data-loading="Saving…">
+    {% csrf_token %}
+    <div class="flex items-center gap-4">{% include "partials/avatar.html" with person=user size="h-16 w-16" %}<p class="text-sm text-slate-500">Current picture. Without one, your initial is shown.</p></div>
+    {% include "partials/field.html" with field=form.profile_picture %}
+    {% if form.remove_picture %}<label class="flex items-center gap-2 text-sm text-slate-600">{{ form.remove_picture }} {{ form.remove_picture.label }}</label>{% endif %}
+    {% include "partials/field.html" with field=form.name %}
+    {% if form.bio %}{% include "partials/field.html" with field=form.bio %}{% include "partials/field.html" with field=form.expertise %}{% endif %}
+    <div><label class="block text-sm font-medium text-slate-700">E-mail</label><p class="text-sm text-slate-600">{{ user.email }} (cannot be changed here)</p></div>
+    {% if user.public_id %}<div><label class="block text-sm font-medium text-slate-700">{% if user.role == "teacher" %}Teacher ID{% else %}Student ID{% endif %}</label><p class="font-mono text-sm">{{ user.public_id }}</p></div>{% endif %}
+    <button type="submit" class="btn btn-primary">Save profile</button>
+  </form>
+</section>
+{% endblock %}

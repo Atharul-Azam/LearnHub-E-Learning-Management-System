@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from core.services import BusinessRuleError
 
+from .identifiers import ensure_public_id
 from .models import User
 
 logger = logging.getLogger("learnhub")
@@ -45,6 +46,8 @@ def change_status(user, new_status, decided_by):
     user.decided_at = timezone.now()
     user.decided_by = decided_by
     user.save(update_fields=["status", "decided_at", "decided_by"])
+    if new_status == S.ACTIVE:
+        ensure_public_id(user)  # a teacher gets the Teacher ID on approval; kept on re-activation
     return user
 
 
@@ -94,3 +97,19 @@ def remove_account(user):
         user.delete()
     except ProtectedError as exc:  # database-level guard
         raise BusinessRuleError("This account is still referenced by other records.") from exc
+
+
+@transaction.atomic
+def remove_own_account(user):
+    """A user deletes his/her own account (password already confirmed by the view).
+
+    Policy: students lose their own enrollments, progress, submissions and favourites;
+    discussion posts they wrote stay for the other participants and show "Deleted user";
+    teachers must first remove their courses (so no student's records are destroyed).
+    """
+    user = User.objects.select_for_update().get(pk=user.pk)
+    if user.role == User.Role.ADMIN:
+        raise BusinessRuleError("Administrator accounts cannot be deleted here.")
+    if user.role == User.Role.TEACHER and user.courses.exists():
+        raise BusinessRuleError("You still own courses. Remove them first.")
+    user.delete()

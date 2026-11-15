@@ -30,12 +30,18 @@ class MediaTestCase(TestCase):
         super().tearDownClass()
 
 
-def make_user(email, role="student", status=None, name=None, password=PASSWORD):
+def make_user(email, role="student", status=None, name=None, password=PASSWORD, verified=True):
     from accounts.models import User
 
-    return User.objects.create_user(
-        email=email, name=name or email.split("@")[0].title(), password=password, role=role, status=status
+    user = User.objects.create_user(
+        email=email,
+        name=name or email.split("@")[0].title(),
+        password=password,
+        role=role,
+        status=status,
+        email_verified=verified,
     )
+    return user
 
 
 def make_admin(email="admin@example.com"):
@@ -55,11 +61,11 @@ def make_student(email="student@example.com", **kw):
     return make_user(email, role="student", **kw)
 
 
-def make_course(teacher, title="Intro to Python", category="Programming", visibility="published", description="A course."):
+def make_course(teacher, title="Intro to Python", category="Programming", visibility="published", description="A course.", access="public"):
     from courses.models import Course
 
     return Course.objects.create(
-        teacher=teacher, title=title, category=category, description=description, visibility=visibility
+        teacher=teacher, title=title, category=category, description=description, visibility=visibility, access=access
     )
 
 

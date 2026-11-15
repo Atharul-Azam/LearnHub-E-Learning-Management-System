@@ -1,11 +1,28 @@
-<article class="card flex flex-col overflow-hidden !p-0">
-  {% include "partials/thumb.html" %}
-  <div class="flex flex-1 flex-col gap-2 p-4">
-    <span class="badge badge-indigo self-start">{{ course.category }}</span>
-    <h3 class="text-lg font-semibold leading-snug">{{ course.title }}</h3>
-    <p class="text-sm text-slate-500">By {{ course.teacher.name }}</p>
-    <div class="mt-auto pt-2">
-      <a class="btn btn-primary w-full" href="{% url 'courses:detail' course.pk %}">{% if enrolled %}Open Course{% else %}View details{% endif %}</a>
+<article class="course-card group">
+  <a href="{% url 'courses:detail' course.pk %}" class="block" tabindex="-1" aria-hidden="true">{% include "partials/cover.html" with css="h-36 w-full" %}</a>
+  <div class="flex flex-1 flex-col gap-3 p-4">
+    <div class="min-w-0">
+      <div class="flex items-start justify-between gap-2">
+        <h3 class="line-clamp-2 text-base font-semibold leading-snug tracking-tight"><a class="hover:text-indigo-700 hover:underline" href="{% url 'courses:detail' course.pk %}">{{ course.title }}</a></h3>
+        {% if course.is_private %}<span class="badge badge-slate shrink-0">Private</span>{% endif %}
+      </div>
+      <p class="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">{% include "partials/avatar.html" with person=course.teacher size="h-5 w-5" %}<span class="truncate">By {{ course.teacher.name }}</span></p>
+    </div>
+    <p class="line-clamp-2 text-sm text-slate-600">{{ course.description }}</p>
+    <div class="mt-auto space-y-3">
+      <div class="flex items-center justify-between gap-2 text-xs text-slate-500">
+        {% if course.student_total is not None %}<span class="inline-flex items-center gap-1">{% include "partials/icon.html" with name="users" css="h-4 w-4" %}{{ course.student_total }} student{{ course.student_total|pluralize }}</span>{% else %}<span></span>{% endif %}
+        {% if enrolled %}<span class="badge badge-green">Enrolled</span>{% endif %}
+      </div>
+      <div class="flex gap-2">
+        <a class="btn btn-primary flex-1" href="{% url 'courses:detail' course.pk %}">{% if enrolled %}Open Course{% else %}View details{% endif %}</a>
+        {% if favourite_ids is not None %}
+        <form method="post" action="{% url 'courses:favourite_toggle' course.pk %}" class="flex">
+          {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="btn btn-secondary !px-3" aria-label="{% if course.pk in favourite_ids %}Remove {{ course.title }} from favourites{% else %}Save {{ course.title }} to favourites{% endif %}" aria-pressed="{% if course.pk in favourite_ids %}true{% else %}false{% endif %}"><span class="{% if course.pk in favourite_ids %}text-amber-500{% endif %}">{% if course.pk in favourite_ids %}&#9733;{% else %}&#9734;{% endif %}</span></button>
+        </form>
+        {% endif %}
+      </div>
     </div>
   </div>
 </article>

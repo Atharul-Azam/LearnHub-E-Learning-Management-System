@@ -4,6 +4,7 @@ import logging
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 
 from core.services import BusinessRuleError
 
@@ -13,12 +14,15 @@ logger = logging.getLogger("learnhub")
 
 
 def published_courses():
-    return Course.objects.filter(visibility=Course.Visibility.PUBLISHED).select_related("teacher")
+    """Courses a student may *discover*: published and public (private courses are never listed)."""
+    return Course.objects.filter(
+        visibility=Course.Visibility.PUBLISHED, access=Course.Access.PUBLIC
+    ).select_related("teacher")
 
 
 def published_categories():
     return (
-        Course.objects.filter(visibility=Course.Visibility.PUBLISHED)
+        Course.objects.filter(visibility=Course.Visibility.PUBLISHED, access=Course.Access.PUBLIC)
         .exclude(category="")
         .order_by("category")
         .values_list("category", flat=True)
@@ -76,11 +80,24 @@ def remove_course(course):
 @transaction.atomic
 def enroll_student(student, course):
     """Create the enrollment. Returns True if created, False if it already existed."""
-    if not Course.objects.filter(pk=course.pk, visibility=Course.Visibility.PUBLISHED).exists():
-        raise BusinessRuleError("This course is not available for enrollment.")
+    if not Course.objects.filter(
+        pk=course.pk, visibility=Course.Visibility.PUBLISHED, access=Course.Access.PUBLIC
+    ).exists():
+        raise BusinessRuleError("This course is not available for direct enrollment.")
     try:
         with transaction.atomic():
             _, created = Enrollment.objects.get_or_create(student=student, course=course)
     except IntegrityError:  # concurrent duplicate; the unique constraint won
         return False
+    if created:
+        from notifications.models import Notification
+        from notifications.services import notify
+
+        notify(
+            course.teacher,
+            Notification.Category.COURSES,
+            f"{student.name} enrolled in '{course.title}'.",
+            reverse("courses:teacher_students", args=[course.pk]),
+            f"enrolled:{course.pk}:{student.pk}",
+        )
     return created

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-bold">Notifications <span class="text-base font-normal text-slate-500">({{ unread_total }} unread)</span></h1>
+  <div class="flex gap-2">
+    <a class="btn btn-secondary" href="{% url 'notifications:list' %}{% if not only_unread %}?filter=unread{% endif %}">{% if only_unread %}Show all{% else %}Unread only{% endif %}</a>
+    <form method="post" action="{% url 'notifications:read_all' %}">{% csrf_token %}<button class="btn btn-primary" type="submit" {% if not unread_total %}disabled{% endif %}>Mark all as read</button></form>
+  </div>
+</div>
+{% if page.object_list %}
+<div class="card divide-y divide-slate-100 !p-0">
+  {% for note in page %}
+  <form method="post" action="{% url 'notifications:open' note.pk %}">{% csrf_token %}
+    <button type="submit" class="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50">
+      <span class="mt-1.5 h-2 w-2 flex-none rounded-full {% if note.is_read %}bg-transparent{% else %}bg-indigo-600{% endif %}" aria-hidden="true"></span>
+      <span class="flex-1"><span class="{% if not note.is_read %}font-semibold{% else %}text-slate-600{% endif %}">{{ note.message }}</span><span class="block text-xs text-slate-400">{{ note.get_category_display }} · {{ note.created_at|date:"d M Y, H:i" }}{% if not note.is_read %} · <span class="sr-only">unread</span>new{% endif %}</span></span>
+    </button>
+  </form>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% else %}
+<div class="card py-10 text-center"><p class="text-lg font-semibold">{% if only_unread %}No unread notifications{% else %}No notifications yet{% endif %}</p><p class="text-sm text-slate-500">Course, assignment and discussion updates will appear here.</p></div>
+{% endif %}
+{% endblock %}

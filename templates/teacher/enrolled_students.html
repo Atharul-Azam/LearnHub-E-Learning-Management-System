@@ -6,13 +6,16 @@
 {% if page.object_list %}
 <div class="card overflow-x-auto !p-0">
   <table class="table">
-    <thead><tr><th>Name</th><th>E-mail</th><th>Enrollment date</th></tr></thead>
+    <thead><tr><th>Student</th><th>Student ID</th><th>E-mail</th><th>Progress</th><th>Enrolled</th><th></th></tr></thead>
     <tbody>
     {% for enrollment in page %}
       <tr>
-        <td class="font-medium">{{ enrollment.student.name }}</td>
+        <td class="font-medium">{% include "partials/avatar.html" with person=enrollment.student size="h-8 w-8" %} {{ enrollment.student.name }}</td>
+        <td>{{ enrollment.student.public_id|default:"–" }}</td>
         <td>{{ enrollment.student.email }}</td>
+        <td>{{ enrollment.progress }}%</td>
         <td>{{ enrollment.enrolled_at|date:"d M Y, H:i" }}</td>
+        <td class="text-right"><a class="btn btn-secondary" href="{% url 'courses:student_revoke' course.pk enrollment.student_id %}">Revoke access</a></td>
       </tr>
     {% endfor %}
     </tbody>

@@ -7,6 +7,6 @@
     "watch:css": "node tools/build_css.mjs --watch"
   },
   "devDependencies": {
-    "tailwindcss": "^4.1.0"
+    "tailwindcss": "^4.3.5"
   }
 }

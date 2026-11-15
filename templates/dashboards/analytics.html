@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<h1 class="mb-1 text-2xl font-bold">Teacher analytics</h1>
+<p class="mb-6 text-sm text-slate-500">Calculated from the records of your own courses only.</p>
+<section class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Totals">
+  {% include "partials/stat_card.html" with label="Total courses" value=course_total %}
+  {% include "partials/stat_card.html" with label="Total enrolled students" value=student_total hint=enrollment_total|stringformat:"d enrolments" %}
+  {% include "partials/stat_card.html" with label="Public courses" value=public_total %}
+  {% include "partials/stat_card.html" with label="Private courses" value=private_total %}
+  {% include "partials/stat_card.html" with label="Submissions" value=submission_total %}
+  {% include "partials/stat_card.html" with label="Pending review" value=pending_reviews tone="text-amber-600" %}
+  {% include "partials/stat_card.html" with label="Reviewed" value=reviewed_total tone="text-green-600" %}
+  {% include "partials/stat_card.html" with label="Late submissions" value=late_total tone="text-red-600" %}
+</section>
+<section class="card space-y-3" aria-labelledby="enr-h">
+  <h2 id="enr-h" class="text-lg font-semibold">Enrolments per course</h2>
+  {% for row in performance %}
+  <div>
+    <div class="flex justify-between text-sm"><span class="font-medium">{{ row.course.title }} <span class="badge {% if row.course.is_private %}badge-slate{% else %}badge-indigo{% endif %}">{{ row.course.get_access_display }}</span></span><span>{{ row.students }}</span></div>
+    <div class="h-3 overflow-hidden rounded-full bg-slate-200" role="img" aria-label="{{ row.students }} students"><div class="h-full rounded-full bg-indigo-600" style="width: {{ row.bar }}%"></div></div>
+  </div>
+  {% empty %}<p class="text-sm text-slate-500">No courses yet.</p>{% endfor %}
+</section>
+<section class="card mt-6 overflow-x-auto !p-0">
+  <table class="table">
+    <thead><tr><th>Course</th><th>Students</th><th>Avg progress</th><th>Assignments</th><th>Submissions</th><th>Reviewed</th><th>Pending</th></tr></thead>
+    <tbody>{% for row in performance %}<tr><td class="font-medium">{{ row.course.title }}</td><td>{{ row.students }}</td><td>{{ row.avg_progress }}%</td><td>{{ row.assignments }}</td><td>{{ row.submissions }}</td><td>{{ row.reviewed }}</td><td>{{ row.pending }}</td></tr>
+    {% empty %}<tr><td colspan="7" class="text-center text-slate-500">No data yet.</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+{% endblock %}

@@ -1,1 +1,2 @@
-{% load static %}{% if course.thumbnail %}<img src="{% url 'courses:thumbnail' course.pk %}" alt="Thumbnail of {{ course.title }}" class="{{ css|default:'h-40 w-full object-cover' }}" loading="lazy">{% else %}<img src="{% static 'img/default_thumbnail.svg' %}" alt="Default course thumbnail" class="{{ css|default:'h-40 w-full object-cover' }}" loading="lazy">{% endif %}
+{# Backwards-compatible wrapper: every place that showed a thumbnail now shows the cover. css="..." still sets the size. #}
+{% include "partials/cover.html" %}
